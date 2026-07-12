@@ -5,39 +5,37 @@ pragma solidity ^0.8.28;
 import "./libraries/BidHash.sol";
 
 contract VickreyAuction  {
-
+    //constants
+    
     //errors
     error InvalidDuration();
 
-
     error CommitPhaseNotEnded();
-
 
     error CommitPhaseEnded();
 
-
-    error Alreadycommited();
-
+    error AlreadyCommitted();
 
     error InvalidDeposit();
 
-
     error BidAlreadyRevealed();
-
 
     error RevealPhaseEnded();
 
-
     error NoCommitmentFound();
-
 
     error InvalidReveal();
 
-
     error InsufficientDeposit();
 
+    error RevealPhaseNotEnded();
+
+    error AuctionAlreadyFinalized();
+
+    error TransferFailed();
 
 
+//state variables
 
     struct Commitment {
         bytes32 bidHash;
@@ -59,8 +57,11 @@ contract VickreyAuction  {
 
     event BidRevealed(address indexed bidder, uint256 amount);
 
+    event AuctionFinalised(address indexed seller, address indexed highestBidder, uint256 highestBid, uint256 secondHighestBid);
 
+    event RefundWithdrawn(address indexed bidder,uint256 amount);
 
+  //state variables
 
     address public immutable seller;
 
@@ -68,7 +69,11 @@ contract VickreyAuction  {
 
     uint256 public immutable revealDeadline;
 
-    constructor(uint256 _commitDuration,uint256 _revealDuration) {
+    uint256 public immutable PENALTY_PERCENT;
+
+    bool public finalized;
+
+    constructor(uint256 _commitDuration,uint256 _revealDuration,uint256 _penaltyPercent)  {
 
         if (_commitDuration == 0 || _revealDuration == 0) {
         revert InvalidDuration();
@@ -81,10 +86,11 @@ contract VickreyAuction  {
 
         revealDeadline = commitDeadline + _revealDuration;
 
+        PENALTY_PERCENT = _penaltyPercent;
+
     }
 
-
-
+    address[] private bidders;
 
     address public highestBidder;
 
@@ -96,7 +102,7 @@ contract VickreyAuction  {
 
 
 
-
+//functions
 
     function commitBid(bytes32 bidHash) external payable {
 
@@ -105,7 +111,7 @@ contract VickreyAuction  {
         }
 
         if(commitments[msg.sender].bidHash != bytes32(0)) {
-            revert Alreadycommited();
+            revert AlreadyCommitted();
         }
 
         if(msg.value == 0) {
@@ -119,6 +125,8 @@ contract VickreyAuction  {
             revealed: false
         });
 
+        bidders.push(msg.sender);
+
 
         emit BidCommitted(msg.sender, bidHash, msg.value);
 
@@ -127,6 +135,7 @@ contract VickreyAuction  {
     }
 
     function revealBid(uint256 amount, bytes32 salt) external  {
+        
 
         Commitment storage commitment = commitments[msg.sender];
 
@@ -171,6 +180,49 @@ contract VickreyAuction  {
     }
 
     function finalizeAuction() external  {
+
+        if (finalized) {
+            revert AuctionAlreadyFinalized();
+        }
+
+        if(block.timestamp < revealDeadline) {
+            revert RevealPhaseNotEnded();
+        }
+
+        for(uint256 i=0;i<bidders.length;i++){
+            address bidder=bidders[i];
+            Commitment storage commitment = commitments[bidder];
+
+            if(commitment.revealed) {
+                if(bidder == highestBidder) {
+                    //winner pays the secondhighest bid
+                    uint256 refund = commitment.deposit - secondHighestBid;
+                    if(refund > 0) {
+                        refunds[bidder] = refund;
+                    }
+                } else {
+                    // Full refund for losing bidders
+                    refunds[bidder] = commitment.deposit;
+                }
+            } else {
+                //penalty for not revealing bid
+                uint256 penalty =commitment.deposit * PENALTY_PERCENT / 100;
+
+                refunds[bidder] = commitment.deposit - penalty;
+            }
+        }
+        finalized = true;
+
+        
+        (bool success, ) = payable(seller).call{value: secondHighestBid}("");
+
+        if(!success) {
+
+            revert TransferFailed();
+
+        }
+
+        emit AuctionFinalised(seller, highestBidder, highestBid, secondHighestBid);
 
     }
 

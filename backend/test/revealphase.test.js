@@ -7,7 +7,7 @@ describe("Reveal Phase", function () {
     it("should allow a valid bidder to reveal", async function () {
 
         const Auction = await ethers.getContractFactory("VickreyAuction");
-        const auction = await Auction.deploy(3600, 3600);
+        const auction = await Auction.deploy(3600, 3600,20);
 
         const [owner, alice, bob] = await ethers.getSigners();
         const amount = ethers.parseEther("5");

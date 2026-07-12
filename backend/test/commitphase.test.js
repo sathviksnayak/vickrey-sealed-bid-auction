@@ -7,7 +7,7 @@ describe("Commit Phase", function () {
     it("should allow a user to commit a bid", async function () {
 
         const Auction = await ethers.getContractFactory("VickreyAuction");
-        const auction = await Auction.deploy(3600, 3600);
+        const auction = await Auction.deploy(3600, 3600,20);
 
         const [owner, alice] = await ethers.getSigners();
         const [, bob] = await ethers.getSigners();
@@ -37,7 +37,7 @@ describe("Commit Phase", function () {
                     value: bidAmount
                 }
             )
-        ).to.be.revertedWithCustomError(auction, "Alreadycommited");
+        ).to.be.revertedWithCustomError(auction, "AlreadyCommitted");
 
         await time.increase(3601);
 
