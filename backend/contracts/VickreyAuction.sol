@@ -24,7 +24,17 @@ contract VickreyAuction  {
 
     error BidAlreadyRevealed();
 
+
     error RevealPhaseEnded();
+
+
+    error NoCommitmentFound();
+
+
+    error InvalidReveal();
+
+
+    error InsufficientDeposit();
 
 
 
@@ -47,7 +57,7 @@ contract VickreyAuction  {
     //events
     event BidCommitted(address indexed bidder, bytes32 bidHash, uint256 deposit);
 
-
+    event BidRevealed(address indexed bidder, uint256 amount);
 
 
 
@@ -118,17 +128,45 @@ contract VickreyAuction  {
 
     function revealBid(uint256 amount, bytes32 salt) external  {
 
+        Commitment storage commitment = commitments[msg.sender];
+
         if (block.timestamp < commitDeadline) {
         revert CommitPhaseNotEnded();
         }
 
-        if(commitments[msg.sender].revealed) {
+        if(commitment.revealed) {
             revert BidAlreadyRevealed();
         }
 
         if(block.timestamp >= revealDeadline) {
             revert RevealPhaseEnded();
         }
+
+        if(commitment.bidHash == bytes32(0)) {
+            revert NoCommitmentFound();
+        }
+
+        if(commitment.bidHash != BidHash.generateHash(amount, salt)) {
+            revert InvalidReveal();
+
+        }
+
+        if (commitment.deposit < amount) {
+            revert InsufficientDeposit();
+            }
+
+        commitment.revealed = true;
+
+        if(amount > highestBid) {
+            secondHighestBid = highestBid;
+            highestBid = amount;
+            highestBidder = msg.sender;
+        } else if(amount > secondHighestBid) {
+            secondHighestBid = amount;
+        }
+
+        emit BidRevealed(msg.sender, amount);
+
 
     }
 
