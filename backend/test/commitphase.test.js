@@ -1,24 +1,24 @@
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { time } = require("@nomicfoundation/hardhat-network-helpers");
+const { time, loadFixture } = require("@nomicfoundation/hardhat-network-helpers");
+
+const { hashBid } = require("./helpers/hashBid");
+const { deployAuctionFixture } = require("./helpers/fixtures");
 
 describe("Commit Phase", function () {
 
     it("should allow a user to commit a bid", async function () {
 
-        const Auction = await ethers.getContractFactory("VickreyAuction");
-        const auction = await Auction.deploy(3600, 3600,20);
+        const {
+            auction,
+            alice,
+            bob
+        } = await loadFixture(deployAuctionFixture);
 
-        const [owner, alice] = await ethers.getSigners();
-        const [, bob] = await ethers.getSigners();
         const bidAmount = ethers.parseEther("5");
-
         const salt = ethers.encodeBytes32String("secret");
 
-        const bidHash = ethers.solidityPackedKeccak256(
-            ["uint256", "bytes32"],
-            [bidAmount, salt]
-        );
+        const bidHash = hashBid(bidAmount, salt);
 
         await expect(
             auction.connect(alice).commitBid(
@@ -29,7 +29,6 @@ describe("Commit Phase", function () {
             )
         ).to.emit(auction, "BidCommitted");
 
-
         await expect(
             auction.connect(alice).commitBid(
                 bidHash,
@@ -37,12 +36,13 @@ describe("Commit Phase", function () {
                     value: bidAmount
                 }
             )
-        ).to.be.revertedWithCustomError(auction, "AlreadyCommitted");
+        ).to.be.revertedWithCustomError(
+            auction,
+            "AlreadyCommitted"
+        );
 
         await time.increase(3601);
 
-
-      
         await expect(
             auction.connect(bob).commitBid(
                 bidHash,
@@ -50,9 +50,10 @@ describe("Commit Phase", function () {
                     value: bidAmount
                 }
             )
-        ).to.be.revertedWithCustomError(auction, "CommitPhaseEnded");
-        
-
+        ).to.be.revertedWithCustomError(
+            auction,
+            "CommitPhaseEnded"
+        );
     });
 
 });

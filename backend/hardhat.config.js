@@ -19,5 +19,11 @@ module.exports = {
       contractSizer: {
         runOnCompile: true,
     },
+        networks: {
+        sepolia: {
+            url: process.env.RPC_URL,
+            accounts: [process.env.PRIVATE_KEY]
+        }
+    },
 
 };
