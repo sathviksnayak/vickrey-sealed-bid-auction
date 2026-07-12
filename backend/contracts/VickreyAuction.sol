@@ -34,6 +34,12 @@ contract VickreyAuction  {
 
     error TransferFailed();
 
+    error RefundNotAvailable();
+
+    error NotFinalised();
+
+    error InvalidPenaltyPercent();
+
 
 //state variables
 
@@ -85,7 +91,9 @@ contract VickreyAuction  {
         commitDeadline = block.timestamp + _commitDuration;
 
         revealDeadline = commitDeadline + _revealDuration;
-
+        if(_penaltyPercent > 100) {
+            revert InvalidPenaltyPercent();
+        }
         PENALTY_PERCENT = _penaltyPercent;
 
     }
@@ -227,8 +235,30 @@ contract VickreyAuction  {
     }
 
     function withdrawRefund() external  {
+        if(!finalized) {
+            revert NotFinalised();
+        }
+
+        uint256 refundAmount = refunds[msg.sender];
+
+        if(refundAmount == 0) {
+            revert RefundNotAvailable();
+        }
+
+        refunds[msg.sender] = 0;
+
+        (bool success, ) = payable(msg.sender).call{value: refundAmount}("");
+
+        if(!success) {
+            revert TransferFailed();
+        }
+
+          emit RefundWithdrawn(msg.sender, refunds[msg.sender]);
+
 
     }
+
+  
 
     
 
