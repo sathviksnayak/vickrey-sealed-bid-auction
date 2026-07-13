@@ -99,6 +99,35 @@ console.log(receipt);
 }
 
 
+//revealbid
+
+async function handleReveal() {
+
+        if (!bidAmount || !salt) {
+    alert("Please enter both bid amount and secret.");
+    return;
+}
+    try {
+        const amount = ethers.parseEther(bidAmount);
+
+        const saltBytes = ethers.encodeBytes32String(salt);
+
+        const tx = await contract.revealBid(
+            amount,
+    saltBytes
+        );
+
+        await tx.wait();
+
+        alert("Bid revealed successfully!");
+
+    } catch (err) {
+        console.error(err);
+        alert(err.shortMessage || err.reason || "Reveal failed");
+    }
+}
+
+
 
 
     if(!auction) return <div> loading...</div>
@@ -139,7 +168,7 @@ console.log(receipt);
 
 <button onClick={handlecommit}  disabled={!contract} >Commit Bid</button>
 
-        <button>reveal bid</button>
+        <button onClick={handleReveal} disabled={!contract}>reveal bid</button>
 
         <button>Finalise auction</button>
 

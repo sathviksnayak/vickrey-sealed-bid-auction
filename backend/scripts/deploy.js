@@ -10,8 +10,8 @@ async function main() {
         owner
     );
 
-    const commitDuration = 60 * 60;   // 1 hour
-    const revealDuration = 60 * 60;   // 1 hour
+    const commitDuration = 60 * 10;   // 1 hour
+    const revealDuration = 60 * 20;   // 1 hour
     const penaltyPercent = 10;        // 10%
 
     const auction = await Auction.deploy(
