@@ -1,0 +1,73 @@
+.navbar{
+    height:70px;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 50px;
+
+    background:white;
+
+    border-bottom:1px solid #E2E8F0;
+}
+
+.navbar-logo a{
+
+    text-decoration:none;
+
+    color:#2563EB;
+
+    font-size:1.5rem;
+
+    font-weight:700;
+}
+
+.navbar-links{
+
+    display:flex;
+
+    gap:30px;
+}
+
+.navbar-links a{
+
+    text-decoration:none;
+
+    color:#334155;
+
+    font-weight:500;
+
+    transition:.2s;
+}
+
+.navbar-links a:hover{
+
+    color:#2563EB;
+}
+
+.wallet-button{
+
+    padding:12px 20px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#2563EB;
+
+    color:white;
+
+    font-weight:600;
+
+    cursor:pointer;
+
+    transition:.2s;
+}
+
+.wallet-button:hover{
+
+    background:#1D4ED8;
+}
