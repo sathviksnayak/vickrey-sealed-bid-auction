@@ -8,7 +8,7 @@ import { hashBid } from "../../utils/hashBid";
 export default  function Auction(){
 const { address } = useParams();
 
- const now = Math.floor(Date.now() / 1000);
+
 const [auction, setAuction] = useState(null);
 const [bidAmount, setBidAmount] = useState("");
 const [salt, setSalt] = useState("");
@@ -17,6 +17,7 @@ const [contract, setContract] = useState(null);
     useEffect(() => {
 
         async function loadAuction() {
+             const now = Math.floor(Date.now() / 1000);
 
             const provider = new ethers.BrowserProvider(window.ethereum);
 
@@ -63,6 +64,12 @@ const [contract, setContract] = useState(null);
         }
 
         loadAuction();
+
+            const interval = setInterval(() => {
+        loadAuction();
+    }, 1000);
+
+    return () => clearInterval(interval);
 
     }, [address]);
 
@@ -127,6 +134,38 @@ async function handleReveal() {
     }
 }
 
+//finalise bid
+
+async function handleFinalize() {
+    try {
+        const tx = await contract.finalizeAuction();
+
+        await tx.wait();
+     
+
+        alert("Auction finalized successfully!");
+
+    } catch (err) {
+        console.error(err);
+        alert(err.shortMessage || err.reason || "Finalization failed");
+    }
+}
+
+//withdrawrefunds
+
+async function handleWithdraw() {
+    try {
+        const tx = await contract.withdrawRefund();
+
+        await tx.wait();
+
+        alert("Refund withdrawn successfully!");
+
+    } catch (err) {
+        console.error(err);
+        alert(err.shortMessage || err.reason || "Withdraw failed");
+    }
+}
 
 
 
@@ -147,7 +186,7 @@ async function handleReveal() {
 
     <p className="status">status:{auction.status}</p>
 
-    {auction.finalized && <div><p>highestbid:{auction.highestBid}</p>
+    {auction.finalized && <div><p>highestbid:{auction.highestbid}</p>
     <p>secondhighestbid:{auction.secondhighestbid}</p></div>}
 
    
@@ -170,9 +209,13 @@ async function handleReveal() {
 
         <button onClick={handleReveal} disabled={!contract}>reveal bid</button>
 
-        <button>Finalise auction</button>
+       <button
+        onClick={handleFinalize}
+        disabled={!contract}>
+        Finalize Auction
+        </button>
 
-        <button>withdraw funds</button>
+        <button onClick={handleWithdraw} disabled={!contract}>withdraw funds</button>
     
     </div>
     
