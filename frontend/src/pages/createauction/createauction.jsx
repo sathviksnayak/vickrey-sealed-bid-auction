@@ -1,15 +1,19 @@
 import { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { createAuction } from "../../services/auctionService";
 
 import { useWallet } from "../../context/WalletContext";
 
 import FactoryABI from "../../abi/AuctionFactory.json";
-
 import { FACTORY_ADDRESS } from "../../utils/constants";
 
 export default function CreateAuction() {
 
-    const { signer } = useWallet();
+    const { signer, account } = useWallet();
+
+    const [title, setTitle] = useState("");
+    const [description, setDescription] = useState("");
+    const [category, setCategory] = useState("");
 
     const [commitDuration, setCommitDuration] = useState("");
     const [revealDuration, setRevealDuration] = useState("");
@@ -39,6 +43,9 @@ export default function CreateAuction() {
     async function handleCreateAuction() {
 
         if (
+            !title.trim() ||
+            !description.trim() ||
+            !category.trim() ||
             commitDuration === "" ||
             revealDuration === "" ||
             penalty === ""
@@ -55,18 +62,50 @@ export default function CreateAuction() {
                 Number(penalty)
             );
 
-            await tx.wait();
+            const receipt = await tx.wait();
 
-            const auctions = await factory.getAuctions();
-            const newestAuction = auctions[auctions.length - 1];
+            const event = receipt.logs.map(log => {
+            try {
+            return factory.interface.parseLog(log);
+            } catch {
+            return null;
+            }}).find(log => log && log.name === "AuctionCreated");
+
+            const newestAuction = event.args.auction;
+
+            const now = Math.floor(Date.now() / 1000);
+
+            const commitDeadline = now + Number(commitDuration);
+            const revealDeadline =
+                commitDeadline + Number(revealDuration);
+
+           await createAuction({
+            auctionAddress: newestAuction,
+            sellerWallet: account,
+
+            title,
+            description,
+            category,
+
+            images: [],
+
+            commitDeadline,
+            revealDeadline,
+            penalty
+        });
 
             alert("Auction created successfully!");
 
-            console.log("Auction Address:", newestAuction);
+           setTitle("");
+            setDescription("");
+            setCategory("");
+            setCommitDuration("");
+            setRevealDuration("");
+            setPenalty("");
 
         } catch (err) {
             console.error(err);
-            alert(err.shortMessage || err.reason || "Transaction failed");
+            alert(err.response?.data?.message || err.shortMessage || err.reason || "Transaction failed");
         }
     }
 
@@ -74,6 +113,32 @@ export default function CreateAuction() {
         <div>
 
             <h1>Create Auction</h1>
+
+            <label>Title</label>
+            <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+            />
+
+            <label>Description</label>
+            <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+            />
+
+            <label>Category</label>
+           <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}>
+            <option value="">Select Category</option>
+            <option value="Electronics">Electronics</option>
+            <option value="Vehicles">Vehicles</option>
+            <option value="Furniture">Furniture</option>
+            <option value="Books">Books</option>
+            <option value="Collectibles">Collectibles</option>
+            <option value="Other">Other</option>
+            </select>
 
             <label>Commit Duration (minutes)</label>
             <input
@@ -94,6 +159,8 @@ export default function CreateAuction() {
             <label>Penalty Percentage</label>
             <input
                 type="number"
+                min="0"
+                max="100"
                 onChange={(e) =>
                     setPenalty(Number(e.target.value))
                 }

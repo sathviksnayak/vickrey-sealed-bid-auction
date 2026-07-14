@@ -3,4 +3,8 @@
 /backend/node_modules
 /frontend/.env
 /frontend/node_modules
-/backend/coverage
+/blockchain/coverage
+/blockchain/node_modules
+/blockchain/.env
+/blockchain/cache
+/blockchain/artifacts
