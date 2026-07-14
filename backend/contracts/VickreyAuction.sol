@@ -79,14 +79,14 @@ contract VickreyAuction  {
 
     bool public finalized;
 
-    constructor(uint256 _commitDuration,uint256 _revealDuration,uint256 _penaltyPercent)  {
+    constructor(address _seller,uint256 _commitDuration,uint256 _revealDuration,uint256 _penaltyPercent)  {
 
         if (_commitDuration == 0 || _revealDuration == 0) {
         revert InvalidDuration();
         }
 
 
-        seller = msg.sender;
+        seller = _seller;
 
         commitDeadline = block.timestamp + _commitDuration;
 
@@ -253,7 +253,7 @@ contract VickreyAuction  {
             revert TransferFailed();
         }
 
-          emit RefundWithdrawn(msg.sender, refunds[msg.sender]);
+          emit RefundWithdrawn(msg.sender, refundAmount);
 
 
     }

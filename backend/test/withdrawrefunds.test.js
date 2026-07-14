@@ -6,12 +6,12 @@ const { hashBid } = require("./helpers/hashBid");
 
 describe("withdrawrefunds",function(){
     it("withdraw refunds for non winning bidders", async function () {
-
+        const [owner, alice, bob,phil,stacy] = await ethers.getSigners();
 
         const Auction = await ethers.getContractFactory("VickreyAuction");
-        const auction = await Auction.deploy(3600, 3600,100);
+        const auction = await Auction.deploy(owner,3600, 3600,100);
 
-        const [owner, alice, bob,phil,stacy] = await ethers.getSigners();
+
         const aliceamount = ethers.parseEther("5");
         const alicesalt = ethers.encodeBytes32String("secret");
         const bobamount = ethers.parseEther("10");

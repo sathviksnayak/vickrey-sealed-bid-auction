@@ -10,9 +10,10 @@ describe("finalise auction ",function () {
     it("finalise auction and send fund to seller" , async function () {
 
         const Auction = await ethers.getContractFactory("VickreyAuction");
-        const auction = await Auction.deploy(3600, 3600,10);
+         const [owner, alice, bob,phil,stacy] = await ethers.getSigners();
+        const auction = await Auction.deploy(owner,3600, 3600,10);
 
-        const [owner, alice, bob,phil,stacy] = await ethers.getSigners();
+       
         const aliceamount = ethers.parseEther("5");
         const alicesalt = ethers.encodeBytes32String("secret");
         const bobamount = ethers.parseEther("10");

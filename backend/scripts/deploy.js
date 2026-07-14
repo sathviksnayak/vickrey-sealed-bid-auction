@@ -15,6 +15,7 @@ async function main() {
     const penaltyPercent = 10;        // 10%
 
     const auction = await Auction.deploy(
+        owner,
         commitDuration,
         revealDuration,
         penaltyPercent
