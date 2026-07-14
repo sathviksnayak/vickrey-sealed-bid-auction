@@ -3,76 +3,119 @@ import { useParams } from "react-router-dom";
 import { ethers } from "ethers";
 import ABI from "../../abi/VickreyAuction.json";
 import { hashBid } from "../../utils/hashBid";
-
+import { getAuction } from "../../services/auctionService";
 
 export default  function Auction(){
 const { address } = useParams();
-
 
 const [auction, setAuction] = useState(null);
 const [bidAmount, setBidAmount] = useState("");
 const [salt, setSalt] = useState("");
 const [contract, setContract] = useState(null);
 
-    useEffect(() => {
 
-        async function loadAuction() {
-             const now = Math.floor(Date.now() / 1000);
+    async function loadAuction() {
+let auctionContract = contract;
 
-            const provider = new ethers.BrowserProvider(window.ethereum);
+if (!auctionContract) {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
 
-            const signer = await provider.getSigner();
+    auctionContract = new ethers.Contract(
+        address,
+        ABI,
+        signer
+    );
 
-            const contract = new ethers.Contract(
-                address,
-                ABI,
-                signer
-            );
-            setContract(contract);
+    setContract(auctionContract);
+}
 
-            const seller = await contract.seller();
-            const commitDeadline = await contract.commitDeadline();
-            const revealDeadline = await contract.revealDeadline();
-            const penalty = await contract.PENALTY_PERCENT();
-            const finalized = await contract.finalized();
-            const highestbid=await contract.highestBid();
-            const secondhighestbid=await contract.secondHighestBid();
+        const metadata = await getAuction(address);
 
+        const [
+            seller,
+            commitDeadline,
+            revealDeadline,
+            penalty,
+            finalized,
+            highestbid,
+            secondhighestbid
+        ] = await Promise.all([
+            auctionContract.seller(),
+            auctionContract.commitDeadline(),
+            auctionContract.revealDeadline(),
+            auctionContract.PENALTY_PERCENT(),
+            auctionContract.finalized(),
+            auctionContract.highestBid(),
+            auctionContract.secondHighestBid()
+        ]);
 
-
-            
-            const status =
-            finalized
-            ? "Finalized"
-            : now < commitDeadline
-            ? "Commit Phase"
-            : now < revealDeadline
-            ? "Reveal Phase"
-            : "Awaiting Finalization";
-
-
-            setAuction({
+        setAuction({
+            ...metadata,
             seller,
             commitDeadline: Number(commitDeadline),
             revealDeadline: Number(revealDeadline),
             penalty: Number(penalty),
             finalized,
-            status,
-            highestbid,
-            secondhighestbid
-            });
-        }
+            status: getStatus(
+                Number(commitDeadline),
+                Number(revealDeadline),
+                finalized
+            ),
+            highestbid: Number(highestbid),
+            secondhighestbid: Number(secondhighestbid)
+        });
+    }
 
-        loadAuction();
 
-            const interval = setInterval(() => {
-        loadAuction();
-    }, 1000);
+useEffect(() => {
+    loadAuction();
+
+}, [address]);
+
+
+function getStatus(commitDeadline, revealDeadline, finalized) {
+
+    const now = Math.floor(Date.now() / 1000);
+
+    if (finalized) return "Finalized";
+
+    if (now < commitDeadline) return "Commit Phase";
+
+    if (now < revealDeadline) return "Reveal Phase";
+
+    return "Awaiting Finalization";
+}   
+
+
+
+//loop and update status
+useEffect(() => {
+
+    if (!auction) return;
+
+    const interval = setInterval(() => {
+
+        setAuction(prev => {
+
+            if (!prev) return prev;
+
+            return {
+                ...prev,
+                status: getStatus(
+                    prev.commitDeadline,
+                    prev.revealDeadline,
+                    prev.finalized
+                )
+            };
+        });
+
+    }, 30000);
 
     return () => clearInterval(interval);
 
-    }, [address]);
-
+}, [    auction?.commitDeadline,
+    auction?.revealDeadline,]);
 
     //commit bid
     async function handlecommit() {
@@ -94,6 +137,7 @@ const [contract, setContract] = useState(null);
 
 const receipt = await tx.wait();
 alert("Bid committed successfully!");
+await loadAuction();
 console.log(receipt);
 
 
@@ -127,6 +171,7 @@ async function handleReveal() {
         await tx.wait();
 
         alert("Bid revealed successfully!");
+        await loadAuction();
 
     } catch (err) {
         console.error(err);
@@ -144,6 +189,7 @@ async function handleFinalize() {
      
 
         alert("Auction finalized successfully!");
+        await loadAuction();
 
     } catch (err) {
         console.error(err);
@@ -160,6 +206,7 @@ async function handleWithdraw() {
         await tx.wait();
 
         alert("Refund withdrawn successfully!");
+        await loadAuction();
 
     } catch (err) {
         console.error(err);
@@ -173,18 +220,35 @@ async function handleWithdraw() {
 
 
     return <div><h1>Auction</h1>
-    <h3>Address:{address}</h3>
+<h2>{auction.title}</h2>
 
-    <p>seller:{auction.seller}</p>
+<p><strong>Category:</strong> {auction.category}</p>
 
+<p><strong>Description:</strong> {auction.description}</p>
 
-    <p>commit deadline:{auction.commitDeadline}</p>
+<p><strong>Address:</strong> {address}</p>
 
-    <p>Reveal deadline:{auction.revealDeadline}</p>
-    
-    <p>Penalty:{auction.penalty} %</p>
+<p>
+    <strong>Seller:</strong>{" "}
+    {auction.seller.slice(0, 6)}...
+    {auction.seller.slice(-4)}
+</p>
 
-    <p className="status">status:{auction.status}</p>
+<p>
+    <strong>Commit Deadline:</strong>{" "}
+    {new Date(auction.commitDeadline * 1000).toLocaleString()}
+</p>
+
+<p>
+    <strong>Reveal Deadline:</strong>{" "}
+    {new Date(auction.revealDeadline * 1000).toLocaleString()}
+</p>
+
+<p><strong>Penalty:</strong> {auction.penalty}%</p>
+
+<p>
+    <strong>Status:</strong> {auction.status}
+</p>
 
     {auction.finalized && <div><p>highestbid:{auction.highestbid}</p>
     <p>secondhighestbid:{auction.secondhighestbid}</p></div>}

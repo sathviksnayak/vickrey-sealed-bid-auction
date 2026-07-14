@@ -5,15 +5,20 @@ import { useWallet } from "../../context/WalletContext";
 import AuctionCard from "../../components/auctioncard/AuctionCard";
 
 import AuctionABI from "../../abi/VickreyAuction.json";
-import FactoryABI from "../../abi/AuctionFactory.json";
 
-import { FACTORY_ADDRESS } from "../../utils/constants";
+
+
+
+import { getAuctions } from "../../services/auctionService";
 
 export default function Browse() {
 
     const { signer } = useWallet();
 
     const [auctions, setAuctions] = useState([]);
+
+
+
 
     useEffect(() => {
 
@@ -23,41 +28,45 @@ export default function Browse() {
 
             try {
 
-                const factory = new ethers.Contract(
-                    FACTORY_ADDRESS,
-                    FactoryABI,
-                    signer
-                );
+                const auctions=await getAuctions();
+ const auctionList = await Promise.all(
 
-                const addresses = await factory.getAuctions();
+    auctions.map(async (auction) => {
 
-                const auctionList = [];
+        const contract = new ethers.Contract(
+            auction.auctionAddress,
+            AuctionABI,
+            signer
+        );
 
-                for (const address of addresses) {
+const [
+    seller,
+    commitDeadline,
+    revealDeadline,
+    penalty,
+    finalized
+] = await Promise.all([
+    contract.seller(),
+    contract.commitDeadline(),
+    contract.revealDeadline(),
+    contract.PENALTY_PERCENT(),
+    contract.finalized()
+]);
 
-                    const contract = new ethers.Contract(
-                        address,
-                        AuctionABI,
-                        signer
-                    );
 
-                    const seller = await contract.seller();
-                    const commitDeadline = await contract.commitDeadline();
-                    const revealDeadline = await contract.revealDeadline();
-                    const penalty = await contract.PENALTY_PERCENT();
-                    const finalized = await contract.finalized();
+        return {
+            ...auction,
+            seller,
+            commitDeadline: Number(commitDeadline),
+            revealDeadline: Number(revealDeadline),
+            penalty: Number(penalty),
+            finalized
+        };
+    })
 
-                    auctionList.push({
-                        address,
-                        seller,
-                        commitDeadline: Number(commitDeadline),
-                        revealDeadline: Number(revealDeadline),
-                        penalty: Number(penalty),
-                        finalized,
-                    });
-                }
+);
 
-                setAuctions(auctionList);
+setAuctions(auctionList);
 
             } catch (err) {
                 console.error(err);
@@ -84,7 +93,7 @@ export default function Browse() {
 
             {auctions.map((auction) => (
                 <AuctionCard
-                    key={auction.address}
+                 key={auction.auctionAddress}
                     auction={auction}
                 />
             ))}
