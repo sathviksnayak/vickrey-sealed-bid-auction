@@ -1,23 +1,15 @@
 import { createContext, useContext, useState } from "react";
 import { ethers } from "ethers";
-import ABI from "../abi/VickreyAuction.json";
-import { CONTRACT_ADDRESS } from "../utils/constants";
 
 const WalletContext = createContext();
 
 export function WalletProvider({ children }) {
 
     const [account, setAccount] = useState("");
-
     const [provider, setProvider] = useState(null);
-
-    const [Signer, setSigner] = useState(null);
-
-    const [contract, setContract] = useState(null);
+    const [signer, setSigner] = useState(null);
 
     async function connectWallet() {
-
-
 
         if (!window.ethereum) {
             alert("Please install MetaMask");
@@ -26,35 +18,21 @@ export function WalletProvider({ children }) {
 
         try {
 
-        const accounts = await window.ethereum.request({
+            const accounts = await window.ethereum.request({
                 method: "eth_requestAccounts",
             });
-        const browserProvider = new ethers.BrowserProvider(window.ethereum);
 
-        setProvider(browserProvider);
+            const browserProvider = new ethers.BrowserProvider(window.ethereum);
 
-        const signer = await browserProvider.getSigner();
+            const walletSigner = await browserProvider.getSigner();
 
-        setSigner(signer);
-             
-        setAccount(accounts[0]);
-
-
-            const contractInstance = new ethers.Contract(
-                    CONTRACT_ADDRESS,
-                    ABI,
-                    signer
-                );
-
-        setContract(contractInstance);
-
-
-   
+            setProvider(browserProvider);
+            setSigner(walletSigner);
+            setAccount(accounts[0]);
 
         } catch (err) {
             console.error(err);
         }
-
     }
 
     return (
@@ -62,8 +40,7 @@ export function WalletProvider({ children }) {
             value={{
                 account,
                 provider,
-                Signer,
-                contract,
+                signer,
                 connectWallet,
             }}
         >
