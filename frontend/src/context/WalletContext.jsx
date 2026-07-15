@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
 
+import { createUser,getUser } from "../services/userService";
+
+
 const WalletContext = createContext();
 
 export function WalletProvider({ children }) {
@@ -11,6 +14,25 @@ export function WalletProvider({ children }) {
         return new ethers.BrowserProvider(window.ethereum);
     });
     const [signer, setSigner] = useState(null);
+
+
+async function initializeUser(walletSigner) {
+    try {
+        const account = await walletSigner.getAddress();
+
+        setSigner(walletSigner);
+        setAccount(account);
+
+        const user = await getUser(account);
+
+        if (!user) {
+            await createUser(account);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 
     async function connectWallet() {
 
@@ -25,8 +47,9 @@ export function WalletProvider({ children }) {
 
             const walletSigner = await provider.getSigner();
 
-            setSigner(walletSigner);
-            setAccount(await walletSigner.getAddress());
+ await initializeUser(walletSigner);
+
+
 
         } catch (err) {
             console.error(err);
@@ -45,13 +68,18 @@ export function WalletProvider({ children }) {
 
             const walletSigner = await provider.getSigner();
 
-            setSigner(walletSigner);
-            setAccount(await walletSigner.getAddress());   // <-- use getAddress here too
+
+
+            await initializeUser(walletSigner);
         }
 
         restoreWallet();
 
     }, [provider]);
+
+
+
+
 
     return (
         <WalletContext.Provider
@@ -66,6 +94,9 @@ export function WalletProvider({ children }) {
         </WalletContext.Provider>
     );
 }
+
+
+
 
 export function useWallet() {
     return useContext(WalletContext);

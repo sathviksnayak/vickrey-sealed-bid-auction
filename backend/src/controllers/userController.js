@@ -2,15 +2,18 @@ import User from "../models/User.js";
 
 export async function createUser(req, res) {
     try {
+        const { wallet } = req.body;
         const existingUser = await User.findOne({
-            walletAddress: req.body.walletAddress
+            walletAddress: wallet
         });
 
         if (existingUser) {
             return res.status(200).json(existingUser);
         }
 
-        const user = await User.create(req.body);
+    const user = await User.create({
+    walletAddress: wallet
+});
 
         res.status(201).json(user);
 
@@ -29,9 +32,7 @@ export async function getUser(req, res) {
         });
 
         if (!user) {
-            return res.status(404).json({
-                message: "User not found"
-            });
+return res.status(200).json(null);
         }
 
         res.status(200).json(user);

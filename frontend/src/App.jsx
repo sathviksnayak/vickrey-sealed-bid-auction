@@ -7,6 +7,7 @@ import Auction from "./pages/auction/auction";
 import CreateAuction from "./pages/createauction/createauction";
 import MyBids from "./pages/mybids/mybids";
 import MyAuctions from "./pages/myauction/myauctions";
+import Profile from "./pages/profile/profile";
 
 function App() {
     return (
@@ -36,6 +37,11 @@ function App() {
                 <Route
                     path="/my-auctions"
                     element={<MyAuctions />}
+                />
+
+                <Route
+                path="/profile"
+                element ={<Profile/>}
                 />
 
             </Routes>

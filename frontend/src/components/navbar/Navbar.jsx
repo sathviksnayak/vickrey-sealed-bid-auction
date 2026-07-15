@@ -32,6 +32,8 @@ export default function Navbar() {
                     My Bids
                 </Link>
 
+                <Link to="/profile">profile</Link>
+
 
 
             </div>

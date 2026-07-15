@@ -1,7 +1,10 @@
 import api from "./api";
 
-export async function createUser(data) {
-    const response = await api.post("/users", data);
+export async function createUser(wallet) {
+    const response = await api.post("/users", {
+        wallet
+    });
+
     return response.data;
 }
 
