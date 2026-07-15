@@ -2,10 +2,11 @@ import User from "../models/User.js";
 
 export async function createUser(req, res) {
     try {
-        const { wallet } = req.body;
-        const existingUser = await User.findOne({
-            walletAddress: wallet
-        });
+const { wallet } = req.body;
+
+const existingUser = await User.findOne({
+    walletAddress: wallet
+});
 
         if (existingUser) {
             return res.status(200).json(existingUser);
@@ -50,7 +51,7 @@ export async function updateUser(req, res) {
 
         const user = await User.findOneAndUpdate(
             {
-                walletAddress: req.params.wallet
+                walletAddress:req.user.wallet
             },
             req.body,
             {

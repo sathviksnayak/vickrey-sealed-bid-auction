@@ -3,7 +3,11 @@ import Auction from "../models/Auction.js";
 export async function createAuction(req, res) {
     try {
 
-        const auction = await Auction.create(req.body);
+        const auction = await Auction.create({
+            ...req.body,
+            sellerWallet: req.user.wallet
+        });
+      
 
         res.status(201).json(auction);
 
@@ -59,7 +63,7 @@ export async function getMyAuctions(req, res) {
     try {
 
         const auctions = await Auction.find({
-            sellerWallet: req.params.wallet
+            sellerWallet:req.user.wallet
         });
 
         res.status(200).json(auctions);

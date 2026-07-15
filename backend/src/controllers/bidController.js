@@ -3,7 +3,11 @@ import Bid from "../models/Bid.js";
 export async function createBid(req, res) {
     try {
 
-        const bid = await Bid.create(req.body);
+const bid = await Bid.create({
+    ...req.body,
+    bidderWallet: req.user.wallet
+});
+
 
         res.status(201).json(bid);
 
@@ -22,7 +26,7 @@ export async function getMyBids(req, res) {
     try {
 
         const bids = await Bid.find({
-            bidderWallet: req.params.wallet
+            bidderWallet:req.user.wallet
         });
 
         res.status(200).json(bids);
@@ -42,7 +46,7 @@ export async function updateBid(req, res) {
         const bid = await Bid.findOneAndUpdate(
             {
                 auctionAddress: req.params.auctionAddress,
-                bidderWallet: req.body.bidderWallet
+                bidderWallet: req.user.wallet
             },
             req.body,
             {

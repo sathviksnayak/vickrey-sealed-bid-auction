@@ -1,8 +1,10 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
+import { jwtDecode } from "jwt-decode";
+
 
 import { createUser,getUser } from "../services/userService";
-
+import { createNonce,Login } from "../services/authservice";
 
 const WalletContext = createContext();
 
@@ -28,13 +30,30 @@ async function initializeUser(walletSigner) {
         if (!user) {
             await createUser(account);
         }
+         return account;
     } catch (err) {
         console.error(err);
     }
+
+       
 }
 
 
     async function connectWallet() {
+const token = localStorage.getItem("token");
+
+if (token) {
+    try {
+        const decoded = jwtDecode(token);
+
+        if (decoded.exp > Date.now() / 1000) {
+            console.log("Valid token exists");
+            return;
+        }
+    } catch {
+        localStorage.removeItem("token");
+    }
+}
 
         if (!provider) {
             alert("Please install MetaMask");
@@ -47,7 +66,22 @@ async function initializeUser(walletSigner) {
 
             const walletSigner = await provider.getSigner();
 
- await initializeUser(walletSigner);
+
+
+const account= await initializeUser(walletSigner);
+
+ const { nonce } = await createNonce(account);
+
+    const message = `Welcome to Vickrey Auction Nonce: ${nonce}`;
+
+const signature = await walletSigner.signMessage(message);
+
+const { token } = await Login({
+    wallet: account,
+    signature,
+});
+
+localStorage.setItem("token", token);
 
 
 
@@ -58,20 +92,19 @@ async function initializeUser(walletSigner) {
 
     useEffect(() => {
 
-        async function restoreWallet() {
+async function restoreWallet() {
 
-            if (!provider) return;
+    if (!provider) return;
 
-            const accounts = await provider.send("eth_accounts", []);
+    const accounts = await provider.send("eth_accounts", []);
 
-            if (accounts.length === 0) return;
+    if (accounts.length === 0) return;
 
-            const walletSigner = await provider.getSigner();
+    const walletSigner = await provider.getSigner();
 
+    await initializeUser(walletSigner);
 
-
-            await initializeUser(walletSigner);
-        }
+}
 
         restoreWallet();
 

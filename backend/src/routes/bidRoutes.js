@@ -1,5 +1,5 @@
 import express from "express";
-
+import { authMiddleware } from "../middleware/authMiddleware.js";
 import {
     createBid,
     getMyBids,
@@ -8,10 +8,10 @@ import {
 
 const router = express.Router();
 
-router.post("/", createBid);
+router.post("/",authMiddleware, createBid);
 
-router.get("/my-bids/:wallet", getMyBids);
+router.get("/my-bids/:wallet",authMiddleware, getMyBids);
 
-router.put("/:auctionAddress", updateBid);
+router.put("/:auctionAddress",authMiddleware, updateBid);
 
 export default router;

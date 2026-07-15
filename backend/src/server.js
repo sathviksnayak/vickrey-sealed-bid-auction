@@ -7,6 +7,8 @@ import auctionRoutes from "./routes/auctionRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import bidRoutes from "./routes/bidRoutes.js";
 
+import authRoutes from "./routes/authRoutes.js";
+
 dotenv.config();
 
 const app = express();
@@ -16,7 +18,7 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
-
+app.use("/api/auth", authRoutes);
 app.use("/api/auctions", auctionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bids", bidRoutes);
