@@ -6,7 +6,7 @@ export async function createBid(data) {
 }
 
 export async function getMyBids(wallet) {
-    const response = await api.get(`/my-bids/${wallet}`);
+    const response = await api.get(`/bids/my-bids/${wallet}`);
     return response.data;
 }
 

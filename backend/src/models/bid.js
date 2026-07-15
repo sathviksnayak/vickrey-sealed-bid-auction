@@ -26,6 +26,11 @@ const bidSchema = new mongoose.Schema(
 {
     timestamps: true
 }
+
+);
+bidSchema.index(
+    { auctionAddress: 1, bidderWallet: 1 },
+    { unique: true }
 );
 
 export default mongoose.model("Bid", bidSchema);

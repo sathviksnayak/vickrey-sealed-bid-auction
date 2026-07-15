@@ -13,20 +13,22 @@ import { getAuctions } from "../../services/auctionService";
 
 export default function Browse() {
 
-    const { signer } = useWallet();
+    const { provider } = useWallet();
 
     const [auctions, setAuctions] = useState([]);
+    const [loading, setLoading] = useState(false);
 
 
 
 
     useEffect(() => {
 
-        if (!signer) return;
+        if (!provider) return;
 
         async function loadAuctions() {
 
             try {
+                setLoading(true);
 
                 const auctions=await getAuctions();
  const auctionList = await Promise.all(
@@ -36,7 +38,7 @@ export default function Browse() {
         const contract = new ethers.Contract(
             auction.auctionAddress,
             AuctionABI,
-            signer
+            provider
         );
 
 const [
@@ -70,21 +72,23 @@ setAuctions(auctionList);
 
             } catch (err) {
                 console.error(err);
-            }
+            } finally {
+        setLoading(false);
+    }
 
         }
 
         loadAuctions();
 
-    }, [signer]);
+    }, [provider]);
 
-    if (!signer) {
-        return <h2>Connect your wallet.</h2>;
-    }
+if (loading) {
+    return <h2>Loading auctions...</h2>;
+}
 
-    if (auctions.length === 0) {
-        return <h2>No auctions found.</h2>;
-    }
+if (auctions.length === 0) {
+    return <h2>No auctions found.</h2>;
+}
 
     return (
         <div>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
 import { ethers } from "ethers";
 
 const WalletContext = createContext();
@@ -6,34 +6,52 @@ const WalletContext = createContext();
 export function WalletProvider({ children }) {
 
     const [account, setAccount] = useState("");
-    const [provider, setProvider] = useState(null);
+    const [provider] = useState(() => {
+        if (!window.ethereum) return null;
+        return new ethers.BrowserProvider(window.ethereum);
+    });
     const [signer, setSigner] = useState(null);
 
     async function connectWallet() {
 
-        if (!window.ethereum) {
+        if (!provider) {
             alert("Please install MetaMask");
             return;
         }
 
         try {
 
-            const accounts = await window.ethereum.request({
-                method: "eth_requestAccounts",
-            });
+            await provider.send("eth_requestAccounts", []);
 
-            const browserProvider = new ethers.BrowserProvider(window.ethereum);
+            const walletSigner = await provider.getSigner();
 
-            const walletSigner = await browserProvider.getSigner();
-
-            setProvider(browserProvider);
             setSigner(walletSigner);
-            setAccount(accounts[0]);
+            setAccount(await walletSigner.getAddress());
 
         } catch (err) {
             console.error(err);
         }
     }
+
+    useEffect(() => {
+
+        async function restoreWallet() {
+
+            if (!provider) return;
+
+            const accounts = await provider.send("eth_accounts", []);
+
+            if (accounts.length === 0) return;
+
+            const walletSigner = await provider.getSigner();
+
+            setSigner(walletSigner);
+            setAccount(await walletSigner.getAddress());   // <-- use getAddress here too
+        }
+
+        restoreWallet();
+
+    }, [provider]);
 
     return (
         <WalletContext.Provider

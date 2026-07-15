@@ -4,9 +4,12 @@ import { ethers } from "ethers";
 import ABI from "../../abi/VickreyAuction.json";
 import { hashBid } from "../../utils/hashBid";
 import { getAuction } from "../../services/auctionService";
-
+import { createBid,updateBid } from "../../services/bidService";
+import { useWallet } from "../../context/WalletContext";
 export default  function Auction(){
 const { address } = useParams();
+
+const {account }=useWallet();
 
 const [auction, setAuction] = useState(null);
 const [bidAmount, setBidAmount] = useState("");
@@ -117,6 +120,8 @@ useEffect(() => {
 }, [    auction?.commitDeadline,
     auction?.revealDeadline,]);
 
+
+
     //commit bid
     async function handlecommit() {
     if (!bidAmount || !salt) {
@@ -137,6 +142,14 @@ useEffect(() => {
 
 const receipt = await tx.wait();
 alert("Bid committed successfully!");
+
+  const now = new Date();
+
+const data={auctionAddress:address,bidderWallet:account,revealed:false,committedAt:now,revealedAt:null}
+
+
+
+ await createBid(data);
 await loadAuction();
 console.log(receipt);
 
@@ -171,6 +184,10 @@ async function handleReveal() {
         await tx.wait();
 
         alert("Bid revealed successfully!");
+        const now = new Date();
+
+const data={auctionAddress:address,bidderWallet:account,revealed:true,revealedAt:now}
+await updateBid(data);
         await loadAuction();
 
     } catch (err) {

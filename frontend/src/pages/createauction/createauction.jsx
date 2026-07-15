@@ -21,6 +21,9 @@ export default function CreateAuction() {
 
     const [factory, setFactory] = useState(null);
 
+
+    const [creating,setcreating]=useState(false);
+
     useEffect(() => {
 
         if (!signer) return;
@@ -55,6 +58,7 @@ export default function CreateAuction() {
         }
 
         try {
+            setcreating(true);
 
             const tx = await factory.createAuction(
                 Number(commitDuration),
@@ -102,10 +106,13 @@ export default function CreateAuction() {
             setCommitDuration("");
             setRevealDuration("");
             setPenalty("");
+           
 
         } catch (err) {
             console.error(err);
             alert(err.response?.data?.message || err.shortMessage || err.reason || "Transaction failed");
+        }finally{
+            setcreating(false);
         }
     }
 
@@ -168,7 +175,7 @@ export default function CreateAuction() {
 
             <button
                 onClick={handleCreateAuction}
-                disabled={!factory}
+                disabled={!factory || creating}
             >
                 Create Auction
             </button>
