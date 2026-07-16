@@ -6,6 +6,10 @@ import { hashBid } from "../../utils/hashBid";
 import { getAuction } from "../../services/auctionService";
 import { createBid,updateBid } from "../../services/bidService";
 import { useWallet } from "../../context/WalletContext";
+
+import { getAuctionChainData } from "../../services/blockchainService";
+
+
 export default  function Auction(){
 const { address } = useParams();
 
@@ -17,66 +21,43 @@ const [salt, setSalt] = useState("");
 const [contract, setContract] = useState(null);
 
 
-    async function loadAuction() {
-let auctionContract = contract;
+async function loadAuction() {
+    let auctionContract = contract;
 
-if (!auctionContract) {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
+    if (!auctionContract) {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const signer = await provider.getSigner();
 
-    auctionContract = new ethers.Contract(
-        address,
-        ABI,
-        signer
-    );
+        auctionContract = new ethers.Contract(
+            address,
+            ABI,
+            signer
+        );
 
-    setContract(auctionContract);
-}
-
-        const metadata = await getAuction(address);
-
-        const [
-            seller,
-            commitDeadline,
-            revealDeadline,
-            penalty,
-            finalized,
-            highestbid,
-            secondhighestbid,
-            reservePrice
-        ] = await Promise.all([
-            auctionContract.seller(),
-            auctionContract.commitDeadline(),
-            auctionContract.revealDeadline(),
-            auctionContract.PENALTY_PERCENT(),
-            auctionContract.finalized(),
-            auctionContract.highestBid(),
-            auctionContract.secondHighestBid(),
-            auctionContract.reservePrice()
-        ]);
-
-        setAuction({
-            ...metadata,
-            seller,
-            commitDeadline: Number(commitDeadline),
-            revealDeadline: Number(revealDeadline),
-            penalty: Number(penalty),
-            finalized,reservePrice:reservePrice,
-            status: getStatus(
-                Number(commitDeadline),
-                Number(revealDeadline),
-                finalized
-            ),
-            highestbid: Number(highestbid),
-            secondhighestbid: Number(secondhighestbid)
-        });
+        setContract(auctionContract);
     }
+
+    const [metadata, chainData] = await Promise.all([
+        getAuction(address),
+        getAuctionChainData(address, auctionContract.runner),
+    ]);
+
+    setAuction({
+        ...metadata,
+        ...chainData,
+        status: getStatus(
+            chainData.commitDeadline,
+            chainData.revealDeadline,
+            chainData.finalized
+        ),
+    });
+}
 
 
 useEffect(() => {
     loadAuction();
 
-}, [address]);
+}, [address,contract]);
 
 
 function getStatus(commitDeadline, revealDeadline, finalized) {
@@ -316,8 +297,8 @@ async function handleWithdraw() {
     ))}
 </ul>
 
-    {auction.finalized && <div><p>Highest Bid: {ethers.formatEther(BigInt(auction.highestbid))} ETH</p>
-<p>Second Highest Bid: {ethers.formatEther(BigInt(auction.secondhighestbid))} ETH</p></div>}
+    {auction.finalized && <div><p>Highest Bid: {ethers.formatEther(BigInt(auction.highestBid))} ETH</p>
+<p>Second Highest Bid: {ethers.formatEther(BigInt(auction.secondHighestBid))} ETH</p></div>}
 
    
 

@@ -1,4 +1,4 @@
- [
+[
     {
       "inputs": [
         {
@@ -33,6 +33,11 @@
     {
       "inputs": [],
       "name": "AlreadyCommitted",
+      "type": "error"
+    },
+    {
+      "inputs": [],
+      "name": "AlreadyRefunded",
       "type": "error"
     },
     {
@@ -88,11 +93,6 @@
     {
       "inputs": [],
       "name": "NotFinalised",
-      "type": "error"
-    },
-    {
-      "inputs": [],
-      "name": "RefundNotAvailable",
       "type": "error"
     },
     {

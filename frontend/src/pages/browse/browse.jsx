@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { ethers } from "ethers";
+
 
 import { useWallet } from "../../context/WalletContext";
 import AuctionCard from "../../components/auctioncard/AuctionCard";
 
-import AuctionABI from "../../abi/VickreyAuction.json";
 
 
+import { getAuctionChainData } from "../../services/blockchainService";
 
 
 import { getAuctions } from "../../services/auctionService";
@@ -35,37 +35,15 @@ export default function Browse() {
 
     auctions.map(async (auction) => {
 
-        const contract = new ethers.Contract(
-            auction.auctionAddress,
-            AuctionABI,
-            provider
-        );
-
-const [
-    seller,
-    commitDeadline,
-    revealDeadline,
-    penalty,
-    finalized,
-    reservePrice
-] = await Promise.all([
-    contract.seller(),
-    contract.commitDeadline(),
-    contract.revealDeadline(),
-    contract.PENALTY_PERCENT(),
-    contract.finalized(),
-    contract.reservePrice()
-]);
+const chainData = await getAuctionChainData(
+    auction.auctionAddress,
+    provider
+);
 
 
 return {
     ...auction,
-    seller,
-    commitDeadline: Number(commitDeadline),
-    revealDeadline: Number(revealDeadline),
-    penalty: Number(penalty),
-    finalized,
-    reservePrice
+    ...chainData
 };
     })
 

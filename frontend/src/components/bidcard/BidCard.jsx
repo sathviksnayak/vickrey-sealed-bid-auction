@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { ethers } from "ethers";
-export default function BidCard({ auction }) {
+export default function BidCard({ auction,account }) {
 
     const now = Math.floor(Date.now() / 1000);
 
@@ -82,6 +82,15 @@ export default function BidCard({ auction }) {
                     {new Date(auction.revealedAt).toLocaleString()}
                 </p>
             )}
+
+            <p>
+    <strong>Result:</strong>{" "}
+{auction.finalized
+    ? auction.highestBidder.toLowerCase() === account.toLowerCase()
+        ? "🏆 Won"
+        : "❌ Lost"
+    : "Pending"}
+        </p>
 
             <Link to={`/auction/${auction.auctionAddress}`}>
                 <button>View Auction</button>

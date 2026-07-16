@@ -34,7 +34,7 @@ contract VickreyAuction  {
 
     error TransferFailed();
 
-    error RefundNotAvailable();
+    error AlreadyRefunded();
 
     error NotFinalised();
 
@@ -49,14 +49,11 @@ contract VickreyAuction  {
         bytes32 bidHash;
         uint256 deposit;
         bool revealed;
+        bool withdrawn;
     }
 
 
     mapping(address => Commitment) private commitments;
-
-
-
-    mapping(address => uint256) private refunds;
 
 
 
@@ -81,7 +78,7 @@ contract VickreyAuction  {
 
     uint256 public immutable reservePrice;
 
-    bool public finalized;
+    
 
     constructor(address _seller,uint256 _commitDuration,uint256 _revealDuration,uint256 _penaltyPercent,uint256 _reservePrice)  {
 
@@ -97,6 +94,7 @@ contract VickreyAuction  {
         commitDeadline = block.timestamp + _commitDuration;
 
         revealDeadline = commitDeadline + _revealDuration;
+
         if(_penaltyPercent > 100) {
             revert InvalidPenaltyPercent();
         }
@@ -108,9 +106,11 @@ contract VickreyAuction  {
 
     }
 
-    address[] private bidders;
+   
 
     address public highestBidder;
+
+    bool public finalized;
 
     uint256 public highestBid;
 
@@ -141,10 +141,11 @@ contract VickreyAuction  {
         commitments[msg.sender] = Commitment({
             bidHash: bidHash,
             deposit: msg.value,
-            revealed: false
+            revealed: false,
+            withdrawn: false
         });
 
-        bidders.push(msg.sender);
+     
 
 
         emit BidCommitted(msg.sender, bidHash, msg.value);
@@ -202,7 +203,7 @@ contract VickreyAuction  {
     }
 
     function finalizeAuction() external  {
-        uint256 sellerPenalty = 0;
+     
 
         if (finalized) {
             revert AuctionAlreadyFinalized();
@@ -214,45 +215,20 @@ contract VickreyAuction  {
 
 
 
-        for(uint256 i=0;i<bidders.length;i++){
-            address bidder=bidders[i];
-            Commitment storage commitment = commitments[bidder];
 
-            if(commitment.revealed) {
-                if(bidder == highestBidder) {
-                    //winner pays the secondhighest bid
-                    uint256 refund = commitment.deposit - secondHighestBid;
-                    if(refund > 0) {
-                        refunds[bidder] = refund;
-                    }
-                } else {
-                    // Full refund for losing bidders
-                    refunds[bidder] = commitment.deposit;
-                }
-            } else {
-                //penalty for not revealing bid
-                uint256 penalty =commitment.deposit * PENALTY_PERCENT / 100;
-                sellerPenalty+=penalty;
-
-                refunds[bidder] = commitment.deposit - penalty;
-            }
-        }
         finalized = true;
 
-        uint256 sellerAmount = sellerPenalty;
+    uint256 sellerAmount = 0;
+    if (highestBidder != address(0)) {
+        sellerAmount = secondHighestBid;
+    }
 
-        if (highestBidder != address(0)) {
-       
-            sellerAmount += secondHighestBid;
-        }
-
-        if (sellerAmount > 0) {
-            (bool success, ) = payable(seller).call{value: sellerAmount}("");
-
+    if (sellerAmount > 0) {
+        (bool success, ) = payable(seller).call{value: sellerAmount}("");
         if (!success) {
             revert TransferFailed();
-            }
         }
+    }
 
         emit AuctionFinalised(seller, highestBidder, highestBid, secondHighestBid);
 
@@ -263,21 +239,52 @@ contract VickreyAuction  {
             revert NotFinalised();
         }
 
-        uint256 refundAmount = refunds[msg.sender];
+        Commitment storage commitment = commitments[msg.sender];
 
-        if(refundAmount == 0) {
-            revert RefundNotAvailable();
+        if (commitment.bidHash == bytes32(0)) {
+        revert NoCommitmentFound();
         }
 
-        refunds[msg.sender] = 0;
+        if(commitment.withdrawn){
+            revert  AlreadyRefunded();
+        }
 
-        (bool success, ) = payable(msg.sender).call{value: refundAmount}("");
+        commitment.withdrawn = true;
 
-        if(!success) {
+        uint256 payoutAmount;
+        uint256 sellerPenalty = 0;
+
+            if (commitment.revealed) {
+        if (msg.sender == highestBidder) {
+            // winner: refund is deposit minus second highest bid
+            payoutAmount = commitment.deposit - secondHighestBid;
+        } else {
+            // loser: full refund
+            payoutAmount = commitment.deposit;
+        }
+        } else {
+        // never revealed:deposit-penalty
+        sellerPenalty = commitment.deposit * PENALTY_PERCENT / 100;
+        payoutAmount = commitment.deposit - sellerPenalty;
+        }
+
+
+        if (sellerPenalty > 0) {
+        (bool sellerSuccess, ) = payable(seller).call{value: sellerPenalty}("");
+        if (!sellerSuccess) {
             revert TransferFailed();
+            }
         }
 
-          emit RefundWithdrawn(msg.sender, refundAmount);
+        if (payoutAmount > 0) {
+        (bool success, ) = payable(msg.sender).call{value: payoutAmount}("");
+        if (!success) {
+            revert TransferFailed();
+            }
+        }
+
+       
+          emit RefundWithdrawn(msg.sender, payoutAmount);
 
 
     }

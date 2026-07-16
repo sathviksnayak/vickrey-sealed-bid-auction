@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
-import { ethers } from "ethers";
+
 
 import { useWallet } from "../../context/WalletContext";
 import BidCard from "../../components/bidcard/BidCard";
 
-import AuctionABI from "../../abi/VickreyAuction.json";
+
 
 import { getMyBids } from "../../services/bidService";
 import { getAuction } from "../../services/auctionService";
+
+import { getAuctionChainData } from "../../services/blockchainService";
 
 
 
@@ -29,41 +31,22 @@ export default function MyBids() {
             try {
 
                 const auctions=await getMyBids();
-                console.log(account);
-                console.log(auctions);
+
                 const auctionList = await Promise.all(
 
         auctions.map(async (auction) => {
           
-
-
-        const contract = new ethers.Contract(
-            auction.auctionAddress,
-            AuctionABI,
-            signer
-        );
-
-const [metadata, seller, commitDeadline, revealDeadline, penalty, finalized,reservePrice] =
-    await Promise.all([
-        getAuction(auction.auctionAddress),
-        contract.seller(),
-        contract.commitDeadline(),
-        contract.revealDeadline(),
-        contract.PENALTY_PERCENT(),
-        contract.finalized(),
-        contract.reservePrice()
-    ]);
+const [metadata, chainData] = await Promise.all([
+    getAuction(auction.auctionAddress),
+    getAuctionChainData(auction.auctionAddress, signer),
+]);
 
 
         return {
             ...auction,
             ...metadata,
-            seller,
-            commitDeadline: Number(commitDeadline),
-            revealDeadline: Number(revealDeadline),
-            penalty: Number(penalty),
-            finalized,
-            reservePrice:reservePrice
+            ...chainData
+            
         };
     })
 
@@ -98,11 +81,14 @@ setAuctions(auctionList);
 
             <h1>your Bids</h1>
 
+
             {auctions.map((auction) => (
                 <BidCard
                  key={auction.auctionAddress}
                     auction={auction}
+                    account={account}
                 />
+
             ))}
 
         </div>

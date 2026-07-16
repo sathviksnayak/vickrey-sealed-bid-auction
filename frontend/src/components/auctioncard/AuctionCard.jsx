@@ -67,6 +67,15 @@ export default function AuctionCard({ auction }) {
 
             <p><strong>Status:</strong> {status}</p>
 
+<p>
+  <strong>Result:</strong>{" "}
+  {auction.finalized
+    ? auction.highestBidder !== ethers.ZeroAddress
+      ? "✅ Sold"
+      : "❌ Not Sold"
+    : "⏳ Auction Ongoing"}
+</p>
+
             <Link to={`/auction/${auction.auctionAddress}`}>
                 <button>View Auction</button>
             </Link>
