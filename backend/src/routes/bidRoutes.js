@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/",authMiddleware, createBid);
 
-router.get("/my-bids/:wallet",authMiddleware, getMyBids);
+router.get("/my-bids", authMiddleware, getMyBids);
 
 router.put("/:auctionAddress",authMiddleware, updateBid);
 

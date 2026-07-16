@@ -18,6 +18,8 @@ export default function CreateAuction() {
     const [commitDuration, setCommitDuration] = useState("");
     const [revealDuration, setRevealDuration] = useState("");
     const [penalty, setPenalty] = useState("");
+    const [reservePrice,setreservePrice]=useState("");
+
 
     const [factory, setFactory] = useState(null);
 
@@ -61,10 +63,11 @@ export default function CreateAuction() {
             setcreating(true);
 
             const tx = await factory.createAuction(
-                Number(commitDuration),
-                Number(revealDuration),
-                Number(penalty)
-            );
+                    Number(commitDuration),
+                    Number(revealDuration),
+                    Number(penalty),
+                     ethers.parseEther(reservePrice)
+                    );
 
             const receipt = await tx.wait();
 
@@ -106,7 +109,7 @@ export default function CreateAuction() {
             setCommitDuration("");
             setRevealDuration("");
             setPenalty("");
-           
+           setreservePrice("");
 
         } catch (err) {
             console.error(err);
@@ -172,7 +175,10 @@ export default function CreateAuction() {
                     setPenalty(Number(e.target.value))
                 }
             />
-
+            <label>ReservePrice:</label>
+            <input type="number"
+            min="0"
+            onChange={(e)=>setreservePrice(e.target.value)}/>
             <button
                 onClick={handleCreateAuction}
                 disabled={!factory || creating}

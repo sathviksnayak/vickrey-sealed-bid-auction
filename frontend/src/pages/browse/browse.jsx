@@ -46,24 +46,27 @@ const [
     commitDeadline,
     revealDeadline,
     penalty,
-    finalized
+    finalized,
+    reservePrice
 ] = await Promise.all([
     contract.seller(),
     contract.commitDeadline(),
     contract.revealDeadline(),
     contract.PENALTY_PERCENT(),
-    contract.finalized()
+    contract.finalized(),
+    contract.reservePrice()
 ]);
 
 
-        return {
-            ...auction,
-            seller,
-            commitDeadline: Number(commitDeadline),
-            revealDeadline: Number(revealDeadline),
-            penalty: Number(penalty),
-            finalized
-        };
+return {
+    ...auction,
+    seller,
+    commitDeadline: Number(commitDeadline),
+    revealDeadline: Number(revealDeadline),
+    penalty: Number(penalty),
+    finalized,
+    reservePrice
+};
     })
 
 );

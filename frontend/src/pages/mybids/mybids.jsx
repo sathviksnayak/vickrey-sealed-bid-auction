@@ -28,7 +28,7 @@ export default function MyBids() {
             setLoading(true);
             try {
 
-                const auctions=await getMyBids(account);
+                const auctions=await getMyBids();
                 console.log(account);
                 console.log(auctions);
                 const auctionList = await Promise.all(
@@ -43,7 +43,7 @@ export default function MyBids() {
             signer
         );
 
-const [metadata, seller, commitDeadline, revealDeadline, penalty, finalized] =
+const [metadata, seller, commitDeadline, revealDeadline, penalty, finalized,reservePrice] =
     await Promise.all([
         getAuction(auction.auctionAddress),
         contract.seller(),
@@ -51,6 +51,7 @@ const [metadata, seller, commitDeadline, revealDeadline, penalty, finalized] =
         contract.revealDeadline(),
         contract.PENALTY_PERCENT(),
         contract.finalized(),
+        contract.reservePrice()
     ]);
 
 
@@ -61,7 +62,8 @@ const [metadata, seller, commitDeadline, revealDeadline, penalty, finalized] =
             commitDeadline: Number(commitDeadline),
             revealDeadline: Number(revealDeadline),
             penalty: Number(penalty),
-            finalized
+            finalized,
+            reservePrice:reservePrice
         };
     })
 

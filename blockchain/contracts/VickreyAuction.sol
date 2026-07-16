@@ -40,6 +40,8 @@ contract VickreyAuction  {
 
     error InvalidPenaltyPercent();
 
+    //error BidBelowReservePrice();
+
 
 //state variables
 
@@ -77,13 +79,17 @@ contract VickreyAuction  {
 
     uint256 public immutable PENALTY_PERCENT;
 
+    uint256 public immutable reservePrice;
+
     bool public finalized;
 
-    constructor(address _seller,uint256 _commitDuration,uint256 _revealDuration,uint256 _penaltyPercent)  {
+    constructor(address _seller,uint256 _commitDuration,uint256 _revealDuration,uint256 _penaltyPercent,uint256 _reservePrice)  {
 
         if (_commitDuration == 0 || _revealDuration == 0) {
         revert InvalidDuration();
         }
+
+        reservePrice=_reservePrice;
 
 
         seller = _seller;
@@ -95,6 +101,10 @@ contract VickreyAuction  {
             revert InvalidPenaltyPercent();
         }
         PENALTY_PERCENT = _penaltyPercent;
+
+        highestBid=reservePrice;
+
+        secondHighestBid=reservePrice;
 
     }
 
@@ -122,9 +132,10 @@ contract VickreyAuction  {
             revert AlreadyCommitted();
         }
 
-        if(msg.value == 0) {
+        if(msg.value <reservePrice) {
             revert InvalidDeposit();
         }
+
 
 
         commitments[msg.sender] = Commitment({
@@ -172,7 +183,10 @@ contract VickreyAuction  {
             revert InsufficientDeposit();
             }
 
+
+
         commitment.revealed = true;
+        
 
         if(amount > highestBid) {
             secondHighestBid = highestBid;
@@ -188,6 +202,7 @@ contract VickreyAuction  {
     }
 
     function finalizeAuction() external  {
+        uint256 sellerPenalty = 0;
 
         if (finalized) {
             revert AuctionAlreadyFinalized();
@@ -196,6 +211,8 @@ contract VickreyAuction  {
         if(block.timestamp < revealDeadline) {
             revert RevealPhaseNotEnded();
         }
+
+
 
         for(uint256 i=0;i<bidders.length;i++){
             address bidder=bidders[i];
@@ -215,19 +232,26 @@ contract VickreyAuction  {
             } else {
                 //penalty for not revealing bid
                 uint256 penalty =commitment.deposit * PENALTY_PERCENT / 100;
+                sellerPenalty+=penalty;
 
                 refunds[bidder] = commitment.deposit - penalty;
             }
         }
         finalized = true;
 
-        
-        (bool success, ) = payable(seller).call{value: secondHighestBid}("");
+        uint256 sellerAmount = sellerPenalty;
 
-        if(!success) {
+        if (highestBidder != address(0)) {
+       
+            sellerAmount += secondHighestBid;
+        }
 
+        if (sellerAmount > 0) {
+            (bool success, ) = payable(seller).call{value: sellerAmount}("");
+
+        if (!success) {
             revert TransferFailed();
-
+            }
         }
 
         emit AuctionFinalised(seller, highestBidder, highestBid, secondHighestBid);

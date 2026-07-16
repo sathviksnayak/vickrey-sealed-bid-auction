@@ -77,33 +77,3 @@ export async function getMyAuctions(req, res) {
     }
 }
 
-export async function updateAuction(req, res) {
-    try {
-
-        const auction = await Auction.findOneAndUpdate(
-            {
-                auctionAddress: req.params.address
-            },
-            req.body,
-            {
-                new: true,
-                runValidators: true
-            }
-        );
-
-        if (!auction) {
-            return res.status(404).json({
-                message: "Auction not found"
-            });
-        }
-
-        res.status(200).json(auction);
-
-    } catch (err) {
-
-        res.status(500).json({
-            message: err.message
-        });
-
-    }
-}

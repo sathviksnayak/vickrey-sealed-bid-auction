@@ -28,7 +28,7 @@ export default function MyAuctions() {
             setLoading(true);
             try {
 
-                const auctions=await getMyAuctions(account);
+                const auctions=await getMyAuctions();
                 console.log(account);
 console.log(auctions);
                 const auctionList = await Promise.all(
@@ -46,13 +46,15 @@ const [
     commitDeadline,
     revealDeadline,
     penalty,
-    finalized
+    finalized,
+    reservePrice
 ] = await Promise.all([
     contract.seller(),
     contract.commitDeadline(),
     contract.revealDeadline(),
     contract.PENALTY_PERCENT(),
-    contract.finalized()
+    contract.finalized(),
+    contract.reservePrice()
 ]);
 
 

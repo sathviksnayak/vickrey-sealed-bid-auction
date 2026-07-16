@@ -13,7 +13,7 @@ export async function getUser(wallet) {
     return response.data;
 }
 
-export async function updateUser(wallet, data) {
-    const response = await api.put(`/users/${wallet}`, data);
+export async function updateUser(data) {
+    const response = await api.put("/users", data);
     return response.data;
 }

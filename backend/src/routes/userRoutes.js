@@ -12,6 +12,6 @@ router.post("/", createUser);
 
 router.get("/:wallet", getUser);
 
-router.put("/:wallet",authMiddleware, updateUser);
+router.put("/", authMiddleware, updateUser);
 
 export default router;

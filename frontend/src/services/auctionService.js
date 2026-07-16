@@ -15,12 +15,8 @@ export async function getAuction(address) {
     return response.data;
 }
 
-export async function getMyAuctions(wallet) {
-     const response = await api.get(`/auctions/my-auctions/${wallet}`);
+export async function getMyAuctions() {
+     const response = await api.get(`/auctions/my-auctions/`);
     return response.data;
 }
 
-export async function updateAuction(address, data) {
-    const response = await api.put(`/auctions/${address}`, data);
-    return response.data;
-}

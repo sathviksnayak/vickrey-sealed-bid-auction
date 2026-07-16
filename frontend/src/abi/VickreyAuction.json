@@ -1,4 +1,4 @@
-  [
+ [
     {
       "inputs": [
         {
@@ -19,6 +19,11 @@
         {
           "internalType": "uint256",
           "name": "_penaltyPercent",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_reservePrice",
           "type": "uint256"
         }
       ],
@@ -279,6 +284,19 @@
           "internalType": "address",
           "name": "",
           "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "reservePrice",
+      "outputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
         }
       ],
       "stateMutability": "view",

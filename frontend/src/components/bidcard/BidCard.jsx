@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-
+import { ethers } from "ethers";
 export default function BidCard({ auction }) {
 
     const now = Math.floor(Date.now() / 1000);
@@ -43,6 +43,12 @@ export default function BidCard({ auction }) {
             <p>
                 <strong>Reveal Deadline:</strong>{" "}
                 {new Date(auction.revealDeadline * 1000).toLocaleString()}
+            </p>
+
+                        <p>
+                <strong>ReservePrice:</strong>{" "}
+              {ethers.formatEther(auction.reservePrice)} ETH
+            
             </p>
 
             <p><strong>Penalty:</strong> {auction.penalty}%</p>

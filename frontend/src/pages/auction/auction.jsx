@@ -42,7 +42,8 @@ if (!auctionContract) {
             penalty,
             finalized,
             highestbid,
-            secondhighestbid
+            secondhighestbid,
+            reservePrice
         ] = await Promise.all([
             auctionContract.seller(),
             auctionContract.commitDeadline(),
@@ -50,7 +51,8 @@ if (!auctionContract) {
             auctionContract.PENALTY_PERCENT(),
             auctionContract.finalized(),
             auctionContract.highestBid(),
-            auctionContract.secondHighestBid()
+            auctionContract.secondHighestBid(),
+            auctionContract.reservePrice()
         ]);
 
         setAuction({
@@ -59,7 +61,7 @@ if (!auctionContract) {
             commitDeadline: Number(commitDeadline),
             revealDeadline: Number(revealDeadline),
             penalty: Number(penalty),
-            finalized,
+            finalized,reservePrice:reservePrice,
             status: getStatus(
                 Number(commitDeadline),
                 Number(revealDeadline),
@@ -128,7 +130,13 @@ useEffect(() => {
     alert("Please enter both bid amount and secret.");
     return;
 }
-    const amount = ethers.parseEther(bidAmount);
+const amount = ethers.parseEther(bidAmount);
+
+if (amount < auction.reservePrice) {
+    alert("Bid must be at least the reserve price.");
+    return;
+}
+  
 
     const bidHash = hashBid(amount, salt);
     try{
@@ -186,8 +194,13 @@ async function handleReveal() {
         alert("Bid revealed successfully!");
         const now = new Date();
 
-const data={auctionAddress:address,bidderWallet:account,revealed:true,revealedAt:now}
-await updateBid(data);
+const data = {
+    bidderWallet: account,
+    revealed: true,
+    revealedAt: now
+};
+
+await updateBid(address, data);
         await loadAuction();
 
     } catch (err) {
@@ -261,20 +274,27 @@ async function handleWithdraw() {
     {new Date(auction.revealDeadline * 1000).toLocaleString()}
 </p>
 
+<p>
+    <strong>ReservePrice:</strong>{" "}
+  {ethers.formatEther(auction.reservePrice)} ETH
+
+</p>
+
 <p><strong>Penalty:</strong> {auction.penalty}%</p>
 
 <p>
     <strong>Status:</strong> {auction.status}
 </p>
 
-    {auction.finalized && <div><p>highestbid:{auction.highestbid}</p>
-    <p>secondhighestbid:{auction.secondhighestbid}</p></div>}
+    {auction.finalized && <div><p>Highest Bid: {ethers.formatEther(BigInt(auction.highestbid))} ETH</p>
+<p>Second Highest Bid: {ethers.formatEther(BigInt(auction.secondhighestbid))} ETH</p></div>}
 
    
 
         <input
             type="number"
             placeholder="Bid Amount (ETH)"
+           min={ethers.formatEther(auction.reservePrice)}
             value={bidAmount}
             onChange={(e) => setBidAmount(e.target.value)}
             />

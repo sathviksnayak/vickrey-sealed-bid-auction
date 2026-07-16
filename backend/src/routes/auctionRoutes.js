@@ -7,7 +7,7 @@ import {
     getAuctions,
     getAuction,
     getMyAuctions,
-    updateAuction
+ 
 } from "../controllers/auctionController.js";
 
 const router = express.Router();
@@ -18,10 +18,10 @@ router.post("/", authMiddleware,createAuction);
 
 router.get("/", getAuctions);
 
-router.get("/my-auctions/:wallet",authMiddleware, getMyAuctions);
+router.get("/my-auctions", authMiddleware, getMyAuctions);
 
 router.get("/:address", getAuction);
 
-router.put("/:address",authMiddleware, updateAuction);
+
 
 export default router;

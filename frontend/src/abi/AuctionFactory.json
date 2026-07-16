@@ -53,6 +53,11 @@
           "internalType": "uint256",
           "name": "penalty",
           "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "reservePrice",
+          "type": "uint256"
         }
       ],
       "name": "createAuction",
