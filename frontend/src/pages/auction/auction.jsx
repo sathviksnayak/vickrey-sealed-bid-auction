@@ -286,6 +286,36 @@ async function handleWithdraw() {
     <strong>Status:</strong> {auction.status}
 </p>
 
+<h3>Images</h3>
+
+<div>
+    {auction.images?.map((image, index) => (
+        <img
+            key={index}
+            src={image}
+            alt={`Auction ${index + 1}`}
+            width={250}
+        />
+    ))}
+</div>
+
+
+<h3>Documents</h3>
+
+<ul>
+    {auction.documents?.map((document, index) => (
+        <li key={index}>
+            <a
+                href={document.url}
+                target="_blank"
+                rel="noreferrer"
+            >
+                {document.name}
+            </a>
+        </li>
+    ))}
+</ul>
+
     {auction.finalized && <div><p>Highest Bid: {ethers.formatEther(BigInt(auction.highestbid))} ETH</p>
 <p>Second Highest Bid: {ethers.formatEther(BigInt(auction.secondhighestbid))} ETH</p></div>}
 

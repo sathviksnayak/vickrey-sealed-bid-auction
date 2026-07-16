@@ -1,13 +1,26 @@
+import { Document } from "mongoose";
 import Auction from "../models/Auction.js";
-
+import { uploadImage, uploadDocument } from "../services/uploadService.js";
 export async function createAuction(req, res) {
     try {
 
+        const images = req.files?.images || [];
+        const documents = req.files?.documents || [];
+
+        const imageUrls = await Promise.all(
+            images.map(uploadImage)
+        );
+
+        const documentUrls = await Promise.all(
+            documents.map(uploadDocument)
+        );
+
         const auction = await Auction.create({
             ...req.body,
-            sellerWallet: req.user.wallet
+            sellerWallet: req.user.wallet,
+            images: imageUrls,
+            documents: documentUrls
         });
-      
 
         res.status(201).json(auction);
 

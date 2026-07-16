@@ -1,10 +1,13 @@
 import api from "./api";
 
-export async function createAuction(data) {
-    const response = await api.post("/auctions", data);
+export async function createAuction(formData) {
+    const response = await api.post(
+        "/auctions",
+        formData
+    );
+
     return response.data;
 }
-
 export async function getAuctions() {
     const response = await api.get("/auctions");
     return response.data;

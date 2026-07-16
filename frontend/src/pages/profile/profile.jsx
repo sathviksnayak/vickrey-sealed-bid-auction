@@ -44,7 +44,7 @@ export default function Profile() {
 
             setLoading(true);
 
-            await updateUser(account, {
+            await updateUser( {
                 username,
                 email
             });

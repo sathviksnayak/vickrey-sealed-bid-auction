@@ -30,7 +30,7 @@ export default function MyAuctions() {
 
                 const auctions=await getMyAuctions();
                 console.log(account);
-console.log(auctions);
+
                 const auctionList = await Promise.all(
 
         auctions.map(async (auction) => {
@@ -64,7 +64,8 @@ const [
             commitDeadline: Number(commitDeadline),
             revealDeadline: Number(revealDeadline),
             penalty: Number(penalty),
-            finalized
+            finalized,
+            reservePrice
         };
     })
 

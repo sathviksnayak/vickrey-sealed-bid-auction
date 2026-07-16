@@ -1,7 +1,6 @@
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
-
-
+import upload from "../middleware/upload.js";
 import {
     createAuction,
     getAuctions,
@@ -14,7 +13,15 @@ const router = express.Router();
 
 
 
-router.post("/", authMiddleware,createAuction);
+router.post(
+    "/",
+    authMiddleware,
+    upload.fields([
+        { name: "images", maxCount: 5 },
+        { name: "documents", maxCount: 3 }
+    ]),
+    createAuction
+);
 
 router.get("/", getAuctions);
 

@@ -20,6 +20,9 @@ export default function CreateAuction() {
     const [penalty, setPenalty] = useState("");
     const [reservePrice,setreservePrice]=useState("");
 
+    const [images, setImages] = useState([]);
+    const [documents, setDocuments] = useState([]);
+
 
     const [factory, setFactory] = useState(null);
 
@@ -71,6 +74,8 @@ export default function CreateAuction() {
 
             const receipt = await tx.wait();
 
+             alert("Auction created successfully!");
+
             const event = receipt.logs.map(log => {
             try {
             return factory.interface.parseLog(log);
@@ -86,22 +91,25 @@ export default function CreateAuction() {
             const revealDeadline =
                 commitDeadline + Number(revealDuration);
 
-           await createAuction({
-            auctionAddress: newestAuction,
-            sellerWallet: account,
+            const formData = new FormData();
 
-            title,
-            description,
-            category,
+            formData.append("title", title);
+            formData.append("description", description);
+            formData.append("category", category);
+            formData.append("commitDeadline", commitDeadline);
+            formData.append("revealDeadline", revealDeadline);
+            formData.append("penalty", penalty);
+            formData.append("auctionAddress", newestAuction);
+            
+            images.forEach((image) => {
+            formData.append("images", image);});
 
-            images: [],
+            documents.forEach((document) => {
+            formData.append("documents", document);});
 
-            commitDeadline,
-            revealDeadline,
-            penalty
-        });
+           await createAuction(formData);
 
-            alert("Auction created successfully!");
+            alert("Auction added successfully!");
 
            setTitle("");
             setDescription("");
@@ -179,12 +187,31 @@ export default function CreateAuction() {
             <input type="number"
             min="0"
             onChange={(e)=>setreservePrice(e.target.value)}/>
+
+
+                        <label>Images</label>
+            <input
+            type="file"
+            multiple
+            accept="image/*"
+            onChange={(e) => setImages(Array.from(e.target.files))}/>
+
+            <label>Documents</label>
+            <input
+            type="file"
+            multiple
+            accept=".pdf"
+            onChange={(e) => setDocuments(Array.from(e.target.files))}/>
+
+            <hr/>
             <button
                 onClick={handleCreateAuction}
                 disabled={!factory || creating}
             >
                 Create Auction
             </button>
+
+
 
         </div>
     );

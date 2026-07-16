@@ -26,7 +26,22 @@ const auctionSchema = new mongoose.Schema(
         type: String
     },
 
-    images: [String],
+  images: [
+    {
+        type: String
+    }
+],
+
+documents: [
+    {
+        name: {
+            type: String
+        },
+        url: {
+            type: String
+        }
+    }
+],
 
     commitDeadline: Number,
 

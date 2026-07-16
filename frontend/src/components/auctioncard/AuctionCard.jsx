@@ -18,7 +18,15 @@ export default function AuctionCard({ auction }) {
 
     return (
         <div>
-
+{auction.images?.length > 0 ? (
+    <img
+        src={auction.images[0]}
+        alt={auction.title}
+        width={200}
+    />
+) : (
+    <p>No image</p>
+)}
             <h2>{auction.title}</h2>
 
             <p><strong>Category:</strong> {auction.category}</p>
