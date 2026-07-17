@@ -1,0 +1,134 @@
+.tx-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.tx-modal {
+    background-color: #2a2a2e;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 32px;
+    width: 320px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+
+.tx-modal-title {
+    margin: 0 0 24px;
+    color: #f4f4f5;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.tx-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tx-step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 0.9rem;
+}
+
+.tx-step-icon {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.tx-step.done .tx-step-icon {
+    color: #4ade80;
+}
+
+.tx-step.done .tx-step-label {
+    color: #d4d4d8;
+}
+
+.tx-step.active .tx-step-icon {
+    color: #facc15;
+}
+
+.tx-step.active .tx-step-label {
+    color: #f4f4f5;
+    font-weight: 600;
+}
+
+.tx-step.pending .tx-step-icon {
+    color: #52525b;
+}
+
+.tx-step.pending .tx-step-label {
+    color: #6b6b70;
+}
+
+.tx-spin {
+    animation: tx-spin 0.8s linear infinite;
+}
+
+@keyframes tx-spin {
+    to { transform: rotate(360deg); }
+}
+
+.tx-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.tx-result-icon.success {
+    color: #4ade80;
+}
+
+.tx-result-icon.error {
+    color: #f87171;
+}
+
+.tx-result h3 {
+    margin: 0;
+    color: #f4f4f5;
+    font-size: 1.05rem;
+}
+
+.tx-modal-close {
+    background-color: #4f8ef7;
+    color: #ffffff;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.tx-modal-close:hover {
+    background-color: #3d7ce0;
+}
+
+.tx-result-text {
+    margin-top: -8px;
+    margin-bottom: 12px;
+    color: #a1a1aa;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    max-width: 360px;
+}
+
+.tx-result-icon.success {
+    color: #4ade80;
+}
+
+.tx-result-icon.error {
+    color: #ef4444;
+}

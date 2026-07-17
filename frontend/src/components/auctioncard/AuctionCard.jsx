@@ -1,11 +1,19 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ethers } from "ethers";
-export default function AuctionCard({ auction }) {
+import "./AuctionCard.css";
 
+const statusConfig = {
+    "Commit Phase": { dot: "🟢", className: "commit-phase" },
+    "Reveal Phase": { dot: "🟠", className: "reveal-phase" },
+    "Finalized": { dot: "⚫", className: "finalized" },
+    "Awaiting Finalization": { dot: "🟣", className: "awaiting-finalization" },
+};
+
+export default function AuctionCard({ auction}) {
+    const navigate = useNavigate();
     const now = Math.floor(Date.now() / 1000);
 
     let status;
-
     if (auction.finalized) {
         status = "Finalized";
     } else if (now < auction.commitDeadline) {
@@ -16,70 +24,42 @@ export default function AuctionCard({ auction }) {
         status = "Awaiting Finalization";
     }
 
+    const { dot, className } = statusConfig[status];
+
     return (
-        <div>
-{auction.images?.length > 0 ? (
-    <img
-        src={auction.images[0]}
-        alt={auction.title}
-        width={200}
-    />
-) : (
-    <p>No image</p>
-)}
-            <h2>{auction.title}</h2>
+        <div
+            className="auction-card"
+            onClick={() => navigate(`/auction/${auction.auctionAddress}`)}
+        >
+            {auction.images?.length > 0 ? (
+                <img
+                    src={auction.images[0]}
+                    alt={auction.title}
+                    className="auction-image"
+                />
+            ) : (
+                <div className="auction-image-placeholder">No Image</div>
+            )}
 
-            <p><strong>Category:</strong> {auction.category}</p>
+            <div className="auction-content">
+                <h3 className="auction-title">{auction.title}</h3>
+                <p className="category">{auction.category}</p>
 
-            <p>
-                {auction.description.length > 100
-                    ? auction.description.slice(0, 100) + "..."
-                    : auction.description}
-            </p>
+                <div className="reserve-block">
+                    <span className="reserve-label">Reserve</span>
+                    <span className="reserve-value">
+                        {ethers.formatEther(auction.reservePrice)} ETH
+                    </span>
+                </div>
 
-            <p>
-                <strong>Seller:</strong>{" "}
-                {auction.seller.slice(0, 6)}...
-                {auction.seller.slice(-4)}
-            </p>
+                <span className={`status ${className}`}>
+                    {dot} {status}
+                </span>
 
-            <p>
-                <strong>Commit Deadline:</strong>{" "}
-                {new Date(
-                    auction.commitDeadline * 1000
-                ).toLocaleString()}
-            </p>
 
-            <p>
-                <strong>Reveal Deadline:</strong>{" "}
-                {new Date(
-                    auction.revealDeadline * 1000
-                ).toLocaleString()}
-            </p>
 
-            <p>
-                <strong>ReservePrice:</strong>{" "}
-              {ethers.formatEther(auction.reservePrice)} ETH
-            
-            </p>
-
-            <p><strong>Penalty:</strong> {auction.penalty}%</p>
-
-            <p><strong>Status:</strong> {status}</p>
-
-<p>
-  <strong>Result:</strong>{" "}
-  {auction.finalized
-    ? auction.highestBidder !== ethers.ZeroAddress
-      ? "✅ Sold"
-      : "❌ Not Sold"
-    : "⏳ Auction Ongoing"}
-</p>
-
-            <Link to={`/auction/${auction.auctionAddress}`}>
-                <button>View Auction</button>
-            </Link>
-
+                <div className="view-details">View Details →</div>
+            </div>
         </div>
     );
 }

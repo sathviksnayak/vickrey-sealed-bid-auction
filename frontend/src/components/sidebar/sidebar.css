@@ -1,0 +1,53 @@
+.sidebar {
+    position: relative; /* establish stacking context */
+    z-index: 10;
+    width: 240px;
+    background-color: #18181b;
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 24px 0;
+    transition: width 0.2s ease;
+    overflow: hidden;
+}
+
+.sidebar-collapsed {
+    width: 72px;
+}
+
+.sidebar-links {
+    display: flex;
+    flex-direction: column;
+    gap: 15px; /* 14-16px between items */
+}
+
+.sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #a1a1aa;
+    text-decoration: none;
+    padding: 10px 24px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    white-space: nowrap;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-icon {
+    flex-shrink: 0;
+}
+
+.sidebar-link:hover {
+    background-color: rgba(255, 255, 255, 0.04); /* light grey, not blue */
+    color: #e4e4e7;
+}
+
+.sidebar-link.active {
+    background-color: rgba(79, 142, 247, 0.08); /* subtle lighter bg */
+    color: #4f8ef7;
+    border-left: 3px solid #4f8ef7; /* GitHub-style bar */
+}
+
+.sidebar-link.active:hover {
+    background-color: rgba(79, 142, 247, 0.12);
+}

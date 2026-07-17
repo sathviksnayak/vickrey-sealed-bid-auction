@@ -68,3 +68,10 @@ export async function login(req,res){
 
 
 }
+
+export function getCurrentUser(req, res) {
+    res.json({
+        authenticated: true,
+        user: req.user,
+    });
+}

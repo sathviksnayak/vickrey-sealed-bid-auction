@@ -1,4 +1,10 @@
-.bid-card {
+.my-auctions-list {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* center the capped-width cards */
+}
+
+.my-auction-card {
     display: flex;
     gap: 20px;
     width: 100%;
@@ -13,13 +19,13 @@
     transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
-.bid-card:hover {
+.my-auction-card:hover {
     transform: translateY(-2px);
     border-color: rgba(255, 255, 255, 0.14);
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
-.bid-card-image {
+.my-auction-image {
     width: 220px;
     height: 140px;
     object-fit: cover;
@@ -28,20 +34,7 @@
     background-color: #1c1c1f;
 }
 
-.bid-card-image-placeholder {
-    width: 220px;
-    height: 140px;
-    border-radius: 10px;
-    flex-shrink: 0;
-    background-color: #1c1c1f;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b6b70;
-    font-size: 0.85rem;
-}
-
-.bid-card-content {
+.my-auction-content {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -49,14 +42,14 @@
     min-width: 0;
 }
 
-.bid-card-header {
+.my-auction-header {
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
     gap: 12px;
 }
 
-.bid-card-header h2 {
+.my-auction-header h2 {
     margin: 0;
     font-size: 1.1rem;
     color: #f4f4f5;
@@ -65,7 +58,7 @@
     text-overflow: ellipsis;
 }
 
-.bid-card-header p {
+.my-auction-header p {
     margin: 4px 0 0;
     color: #8b8b90;
     font-size: 0.72rem;
@@ -104,10 +97,11 @@
     color: #60a5fa;
 }
 
-.bid-stats-grid {
+/* Three-column stat grid — fills the card width naturally */
+.auction-stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 16px 24px;
+    gap: 24px;
 }
 
 .stat-col {
@@ -124,7 +118,7 @@
 .stat-col strong {
     color: #f4f4f5;
     font-weight: 700;
-    font-size: 0.95rem;
+    font-size: 1rem;
 }
 
 .view-link {
@@ -136,6 +130,6 @@
     transition: transform 0.15s ease;
 }
 
-.bid-card:hover .view-link {
+.my-auction-card:hover .view-link {
     transform: translateX(3px);
 }

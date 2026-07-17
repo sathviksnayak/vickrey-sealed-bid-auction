@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import Navbar from "./components/Navbar/Navbar";
+import Layout from "./components/layout/layout";
 
 import Browse from "./pages/browse/browse";
 import Auction from "./pages/auction/auction";
@@ -12,40 +12,16 @@ import Profile from "./pages/profile/profile";
 function App() {
     return (
         <BrowserRouter>
-
-            <Navbar />
-
-            <Routes>
-
-                <Route path="/" element={<Browse />} />
-
-                <Route
-                    path="/auction/:address"
-                    element={<Auction />}
-                />
-
-                <Route
-                    path="/create"
-                    element={<CreateAuction />}
-                />
-
-                <Route
-                    path="/my-bids"
-                    element={<MyBids />}
-                />
-
-                <Route
-                    path="/my-auctions"
-                    element={<MyAuctions />}
-                />
-
-                <Route
-                path="/profile"
-                element ={<Profile/>}
-                />
-
-            </Routes>
-
+            <Layout>
+                <Routes>
+                    <Route path="/" element={<Browse />} />
+                    <Route path="/auction/:address" element={<Auction />} />
+                    <Route path="/create" element={<CreateAuction />} />
+                    <Route path="/my-bids" element={<MyBids />} />
+                    <Route path="/my-auctions" element={<MyAuctions />} />
+                    <Route path="/profile" element={<Profile />} />
+                </Routes>
+            </Layout>
         </BrowserRouter>
     );
 }

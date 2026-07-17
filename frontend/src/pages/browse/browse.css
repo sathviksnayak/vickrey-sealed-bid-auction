@@ -1,0 +1,13 @@
+.auction-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+    margin-top: 24px;
+    justify-content: center; /* don't hug the left edge */
+}
+
+@media (min-width: 1500px) {
+    .auction-grid {
+        grid-template-columns: repeat(4, minmax(340px, 360px));
+    }
+}

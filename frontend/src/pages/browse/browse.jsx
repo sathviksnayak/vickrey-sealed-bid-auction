@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useWallet } from "../../context/WalletContext";
 import AuctionCard from "../../components/auctioncard/AuctionCard";
 
-
-
+import "./browse.css"
 import { getAuctionChainData } from "../../services/blockchainService";
 
 
@@ -73,16 +72,17 @@ if (auctions.length === 0) {
 
     return (
         <div>
+        
 
-            <h1>Browse Auctions</h1>
-
-            {auctions.map((auction) => (
-                <AuctionCard
-                 key={auction.auctionAddress}
-                    auction={auction}
-                />
-            ))}
-
+            <div className="auction-grid">
+                {auctions.map((auction) => (
+                    <AuctionCard
+                        key={auction.auctionAddress}
+                        auction={auction}
+                     
+                    />
+                ))}
+            </div>
         </div>
     );
 }

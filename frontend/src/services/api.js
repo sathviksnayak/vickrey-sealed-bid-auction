@@ -25,7 +25,7 @@ api.interceptors.response.use(
 
             localStorage.removeItem("token");
 
-            alert("Session expired. Please sign in again.");
+           
 
         }
 

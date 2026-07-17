@@ -1,0 +1,59 @@
+.document-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background-color: #1c1c1f;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 10px;
+    padding: 14px 16px;
+}
+
+.document-icon {
+    color: #4f8ef7;
+    flex-shrink: 0;
+}
+
+.document-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.document-name {
+    color: #f4f4f5;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.document-meta {
+    color: #8b8b90;
+    font-size: 0.75rem;
+}
+
+.document-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.doc-action-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #d4d4d8;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    text-decoration: none;
+    transition: background-color 0.15s ease;
+}
+
+.doc-action-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}

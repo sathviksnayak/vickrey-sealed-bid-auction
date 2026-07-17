@@ -1,0 +1,124 @@
+.topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+    background-color: #202023;
+    padding: 0 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06); /* soft border */
+}
+
+.topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.sidebar-toggle {
+    background: none;
+    border: none;
+    color: #a1a1aa;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 6px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+}
+
+.sidebar-toggle:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.topbar-logo {
+    color: #4f8ef7;
+    font-size: 1.1rem;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.wallet-button {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #1047a4;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px; /* rounder */
+    height: 42px; /* taller */
+    font-weight: 500;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.wallet-button:hover {
+    background-color: #023c9a;
+}
+
+.wallet-menu-wrapper {
+    position: relative;
+}
+
+.wallet-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: 0;
+    width: 220px;
+    background-color: #232326;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+    z-index: 100;
+}
+
+.wallet-dropdown-label {
+    font-size: 0.72rem;
+    color: #71717a;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 6px 10px 2px;
+}
+
+.wallet-dropdown-address {
+    font-size: 0.85rem;
+    color: #f4f4f5;
+    font-weight: 600;
+    padding: 2px 10px 8px;
+}
+
+.wallet-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: none;
+    border: none;
+    color: #d4d4d8;
+    font-size: 0.85rem;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.15s ease;
+}
+
+.wallet-dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.06);
+}
+
+.wallet-dropdown-item.danger {
+    color: #f87171;
+}
+
+.wallet-dropdown-item.danger:hover {
+    background-color: rgba(248, 113, 113, 0.1);
+}
+
+.wallet-dropdown-divider {
+    height: 1px;
+    background-color: rgba(255, 255, 255, 0.08);
+    margin: 6px 4px;
+}

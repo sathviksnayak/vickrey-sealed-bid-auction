@@ -1,0 +1,19 @@
+.layout {
+    min-height: 100vh;
+    background-color: #202023;
+    display: flex;
+    flex-direction: column;
+}
+
+.layout-body {
+    display: flex;
+    flex: 1;
+}
+
+.layout-content {
+    flex: 1;
+    background-color: #232326; /* slightly lighter than sidebar */
+    padding: 40px 48px; /* top 40, left 48 */
+    color: #e4e4e7;
+    min-width: 0;
+}

@@ -11,3 +11,19 @@ export async function Login(data) {
 }
 
 
+
+export async function checkAuthenticated() {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+        return false;
+    }
+
+    try {
+        await api.get("/auth/me");
+        return true;
+    } catch {
+        localStorage.removeItem("token");
+        return false;
+    }
+}
