@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import "./mybids.css"
+import "./mybids.css";
 
 import { useWallet } from "../../context/WalletContext";
 import BidCard from "../../components/bidcard/BidCard";
@@ -11,87 +11,79 @@ import { getAuction } from "../../services/auctionService";
 
 import { getAuctionChainData } from "../../services/blockchainService";
 
-
-
 export default function MyBids() {
-    const auth=useAuthGuard();
-    const { account,signer } = useWallet();
+  const auth = useAuthGuard();
+  const { account, signer, authenticated } = useWallet();
 
-    const [auctions, setAuctions] = useState([]);
-        const [loading, setLoading] = useState(false);
+  const [auctions, setAuctions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    async function loadAuctions() {
+      setLoading(true);
 
-
-    useEffect(() => {
-
-        if (!signer) return;
-
-        async function loadAuctions() {
-             if (!(await auth.ensureAuthenticated())) return;
-            setLoading(true);
-
-            try {
-
-                const auctions=await getMyBids();
-
-                const auctionList = await Promise.all(
-
-        auctions.map(async (auction) => {
-          
-const [metadata, chainData] = await Promise.all([
-    getAuction(auction.auctionAddress),
-    getAuctionChainData(auction.auctionAddress, signer),
-]);
-
-
-        return {
-            ...auction,
-            ...metadata,
-            ...chainData
-            
-        };
-    })
-
-);
-
-setAuctions(auctionList);
-
-            } catch (err) {
-                console.error(err);
-            }finally{
-                setLoading(false);
-            }
-
+      try {
+        if (!(await auth.ensureAuthenticated())) {
+          return;
         }
 
-        loadAuctions();
+        const auctions = await getMyBids();
 
-    }, [signer,account]);
+        const auctionList = await Promise.all(
+          auctions.map(async (auction) => {
+            const [metadata, chainData] = await Promise.all([
+              getAuction(auction.auctionAddress),
+              getAuctionChainData(auction.auctionAddress, signer),
+            ]);
 
-    if (!signer) {
-        return <><h2>Connect your wallet.</h2>{auth.modal}</>;
+            return {
+              ...auction,
+              ...metadata,
+              ...chainData,
+            };
+          })
+        );
+
+        setAuctions(auctionList);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
     }
-    if (loading) {
-    return <><h2>Loading auctions...</h2>{auth.modal}</>;
-}
-    if (auctions.length === 0) {
-        return <><h2>No bids found.</h2>{auth.modal}</>;
-    }
 
-    return (
-        <div>
-            <h1>Your Bids</h1>
+    loadAuctions();
+  }, [signer, account, authenticated]);
 
-            <div className="my-bids-list">
-                {auctions.map((auction) => (
-                    <BidCard
-                        key={auction.auctionAddress}
-                        auction={auction}
-                        account={account}
-                    />
-                ))}
-            </div>
-            {auth.modal}
+  let content;
+
+  if (!signer) {
+    content = <h1>Connect your wallet</h1>;
+  } else if (loading) {
+    content = <h2>Loading your bids...</h2>;
+  } else if (auctions.length === 0) {
+    content = <h2>No bids found.</h2>;
+  } else {
+    content = (
+      <>
+        <h1>Your Bids</h1>
+        <div className="my-bids-list">
+          {auctions.map((auction) => (
+            <BidCard
+              key={auction.auctionAddress}
+              auction={auction}
+              account={account}
+            />
+          ))}
         </div>
+      </>
     );
+  }
+
+  return (
+    <div>
+      {content}
+      {auth.modal}
+    </div>
+  );
 }

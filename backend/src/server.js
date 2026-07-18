@@ -8,11 +8,7 @@ import bidRoutes from "./routes/bidRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 
-
-
-
 const app = express();
-;
 connectDB();
 
 app.use(cors());
@@ -23,11 +19,8 @@ app.use("/api/auctions", auctionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bids", bidRoutes);
 
-
-
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });

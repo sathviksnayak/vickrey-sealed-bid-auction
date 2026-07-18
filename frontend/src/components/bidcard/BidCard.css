@@ -1,141 +1,144 @@
 .bid-card {
-    display: flex;
-    gap: 20px;
-    width: 100%;
-    max-width: 1100px;
-    background-color: #2a2a2e;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
-    padding: 20px;
-    text-decoration: none;
-    color: inherit;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+  display: flex;
+  gap: 20px;
+  width: 100%;
+  max-width: 1100px;
+  background-color: #2a2a2e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  padding: 20px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  transition:
+    transform 0.15s ease,
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .bid-card:hover {
-    transform: translateY(-2px);
-    border-color: rgba(255, 255, 255, 0.14);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.14);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
 }
 
 .bid-card-image {
-    width: 220px;
-    height: 140px;
-    object-fit: cover;
-    border-radius: 10px;
-    flex-shrink: 0;
-    background-color: #1c1c1f;
+  width: 220px;
+  height: 140px;
+  object-fit: cover;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background-color: #1c1c1f;
 }
 
 .bid-card-image-placeholder {
-    width: 220px;
-    height: 140px;
-    border-radius: 10px;
-    flex-shrink: 0;
-    background-color: #1c1c1f;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #6b6b70;
-    font-size: 0.85rem;
+  width: 220px;
+  height: 140px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  background-color: #1c1c1f;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #6b6b70;
+  font-size: 0.85rem;
 }
 
 .bid-card-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 
 .bid-card-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 12px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .bid-card-header h2 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #f4f4f5;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  margin: 0;
+  font-size: 1.1rem;
+  color: #f4f4f5;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bid-card-header p {
-    margin: 4px 0 0;
-    color: #8b8b90;
-    font-size: 0.72rem;
-    letter-spacing: 0.05em;
+  margin: 4px 0 0;
+  color: #8b8b90;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
 }
 
 .status {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    font-size: 0.8rem;
-    font-weight: 500;
-    padding: 5px 12px;
-    border-radius: 20px;
-    flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 20px;
+  flex-shrink: 0;
 }
 
 .status.commit-phase {
-    background-color: rgba(34, 197, 94, 0.18);
-    color: #4ade80;
+  background-color: rgba(34, 197, 94, 0.18);
+  color: #4ade80;
 }
 
 .status.reveal-phase {
-    background-color: rgba(249, 115, 22, 0.18);
-    color: #fb923c;
+  background-color: rgba(249, 115, 22, 0.18);
+  color: #fb923c;
 }
 
 .status.finalized {
-    background-color: rgba(161, 161, 170, 0.16);
-    color: #a1a1aa;
+  background-color: rgba(161, 161, 170, 0.16);
+  color: #a1a1aa;
 }
 
 .status.awaiting-finalization {
-    background-color: rgba(59, 130, 246, 0.18);
-    color: #60a5fa;
+  background-color: rgba(59, 130, 246, 0.18);
+  color: #60a5fa;
 }
 
 .bid-stats-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px 24px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px 24px;
 }
 
 .stat-col {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
 .stat-col span {
-    color: #8b8b90;
-    font-size: 0.8rem;
+  color: #8b8b90;
+  font-size: 0.8rem;
 }
 
 .stat-col strong {
-    color: #f4f4f5;
-    font-weight: 700;
-    font-size: 0.95rem;
+  color: #f4f4f5;
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .view-link {
-    align-self: flex-end;
-    margin-top: auto;
-    color: #4f8ef7;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: transform 0.15s ease;
+  align-self: flex-end;
+  margin-top: auto;
+  color: #4f8ef7;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: transform 0.15s ease;
 }
 
 .bid-card:hover .view-link {
-    transform: translateX(3px);
+  transform: translateX(3px);
 }

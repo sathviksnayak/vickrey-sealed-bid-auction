@@ -1,88 +1,67 @@
 import { useEffect, useState } from "react";
 
-
 import { useWallet } from "../../context/WalletContext";
 import AuctionCard from "../../components/auctioncard/AuctionCard";
 
-import "./browse.css"
+import "./browse.css";
 import { getAuctionChainData } from "../../services/blockchainService";
-
 
 import { getAuctions } from "../../services/auctionService";
 
 export default function Browse() {
+  const { provider } = useWallet();
 
-    const { provider } = useWallet();
+  const [auctions, setAuctions] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-    const [auctions, setAuctions] = useState([]);
-    const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    if (!provider) return;
 
+    async function loadAuctions() {
+      try {
+        setLoading(true);
 
+        const auctions = await getAuctions();
+        const auctionList = await Promise.all(
+          auctions.map(async (auction) => {
+            const chainData = await getAuctionChainData(
+              auction.auctionAddress,
+              provider
+            );
 
+            return {
+              ...auction,
+              ...chainData,
+            };
+          })
+        );
 
-    useEffect(() => {
-
-        if (!provider) return;
-
-        async function loadAuctions() {
-
-            try {
-                setLoading(true);
-
-                const auctions=await getAuctions();
- const auctionList = await Promise.all(
-
-    auctions.map(async (auction) => {
-
-const chainData = await getAuctionChainData(
-    auction.auctionAddress,
-    provider
-);
-
-
-return {
-    ...auction,
-    ...chainData
-};
-    })
-
-);
-
-setAuctions(auctionList);
-
-            } catch (err) {
-                console.error(err);
-            } finally {
+        setAuctions(auctionList);
+      } catch (err) {
+        console.error(err);
+      } finally {
         setLoading(false);
+      }
     }
 
-        }
+    loadAuctions();
+  }, [provider]);
 
-        loadAuctions();
-
-    }, [provider]);
-
-if (loading) {
+  if (loading) {
     return <h2>Loading auctions...</h2>;
-}
+  }
 
-if (auctions.length === 0) {
+  if (auctions.length === 0) {
     return <h2>No auctions found.</h2>;
-}
+  }
 
-    return (
-        <div>
-        
-
-            <div className="auction-grid">
-                {auctions.map((auction) => (
-                    <AuctionCard
-                        key={auction.auctionAddress}
-                        auction={auction}
-                     
-                    />
-                ))}
-            </div>
-        </div>
-    );
+  return (
+    <div>
+      <div className="auction-grid">
+        {auctions.map((auction) => (
+          <AuctionCard key={auction.auctionAddress} auction={auction} />
+        ))}
+      </div>
+    </div>
+  );
 }

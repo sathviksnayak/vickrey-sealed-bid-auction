@@ -10,20 +10,20 @@ import MyAuctions from "./pages/myauction/myauctions";
 import Profile from "./pages/profile/profile";
 
 function App() {
-    return (
-        <BrowserRouter>
-            <Layout>
-                <Routes>
-                    <Route path="/" element={<Browse />} />
-                    <Route path="/auction/:address" element={<Auction />} />
-                    <Route path="/create" element={<CreateAuction />} />
-                    <Route path="/my-bids" element={<MyBids />} />
-                    <Route path="/my-auctions" element={<MyAuctions />} />
-                    <Route path="/profile" element={<Profile />} />
-                </Routes>
-            </Layout>
-        </BrowserRouter>
-    );
+  return (
+    <BrowserRouter>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<Browse />} />
+          <Route path="/auction/:address" element={<Auction />} />
+          <Route path="/create" element={<CreateAuction />} />
+          <Route path="/my-bids" element={<MyBids />} />
+          <Route path="/my-auctions" element={<MyAuctions />} />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </Layout>
+    </BrowserRouter>
+  );
 }
 
 export default App;

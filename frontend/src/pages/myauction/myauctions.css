@@ -1,6 +1,6 @@
 .my-auctions-list {
-    display: flex;
-    flex-direction: column;
-    gap: 34px;
-    margin-top: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+  margin-top: 24px;
 }

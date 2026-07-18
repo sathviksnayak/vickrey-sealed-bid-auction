@@ -1,57 +1,57 @@
 import mongoose from "mongoose";
 
 const auctionSchema = new mongoose.Schema(
-{
+  {
     auctionAddress: {
-        type: String,
-        required: true,
-        unique: true
+      type: String,
+      required: true,
+      unique: true,
     },
 
     sellerWallet: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
 
     title: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
 
     description: {
-        type: String
+      type: String,
     },
 
     category: {
-        type: String
+      type: String,
     },
 
-  images: [
-    {
-        type: String
-    }
-],
+    images: [
+      {
+        type: String,
+      },
+    ],
 
-documents: [
-    {
+    documents: [
+      {
         name: {
-            type: String
+          type: String,
         },
         url: {
-            type: String
-        }
-    }
-],
+          type: String,
+        },
+      },
+    ],
 
     commitDeadline: Number,
 
     revealDeadline: Number,
 
-    penalty: Number
-},
-{
-    timestamps: true
-}
+    penalty: Number,
+  },
+  {
+    timestamps: true,
+  }
 );
 
 export default mongoose.model("Auction", auctionSchema);

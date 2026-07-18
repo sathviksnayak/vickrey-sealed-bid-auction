@@ -13,7 +13,10 @@ describe("VickreyAuction", function () {
 
   // helper to generate the same hash the contract expects
   function generateHash(amount, salt) {
-    return ethers.solidityPackedKeccak256(["uint256", "bytes32"], [amount, salt]);
+    return ethers.solidityPackedKeccak256(
+      ["uint256", "bytes32"],
+      [amount, salt]
+    );
   }
 
   function randomSalt() {
@@ -50,13 +53,25 @@ describe("VickreyAuction", function () {
 
     it("should revert on zero commit or reveal duration", async function () {
       await expect(
-        VickreyAuction.deploy(seller.address, 0, REVEAL_DURATION, PENALTY_PERCENT, RESERVE_PRICE)
+        VickreyAuction.deploy(
+          seller.address,
+          0,
+          REVEAL_DURATION,
+          PENALTY_PERCENT,
+          RESERVE_PRICE
+        )
       ).to.be.revertedWithCustomError(VickreyAuction, "InvalidDuration");
     });
 
     it("should revert on penalty percent > 100", async function () {
       await expect(
-        VickreyAuction.deploy(seller.address, COMMIT_DURATION, REVEAL_DURATION, 101n, RESERVE_PRICE)
+        VickreyAuction.deploy(
+          seller.address,
+          COMMIT_DURATION,
+          REVEAL_DURATION,
+          101n,
+          RESERVE_PRICE
+        )
       ).to.be.revertedWithCustomError(VickreyAuction, "InvalidPenaltyPercent");
     });
   });
@@ -86,10 +101,14 @@ describe("VickreyAuction", function () {
       const salt = randomSalt();
       const hash = generateHash(ethers.parseEther("2"), salt);
 
-      await auction.connect(alice).commitBid(hash, { value: ethers.parseEther("2") });
+      await auction
+        .connect(alice)
+        .commitBid(hash, { value: ethers.parseEther("2") });
 
       await expect(
-        auction.connect(alice).commitBid(hash, { value: ethers.parseEther("2") })
+        auction
+          .connect(alice)
+          .commitBid(hash, { value: ethers.parseEther("2") })
       ).to.be.revertedWithCustomError(auction, "AlreadyCommitted");
     });
 
@@ -100,7 +119,9 @@ describe("VickreyAuction", function () {
       await increaseTime(COMMIT_DURATION + 1);
 
       await expect(
-        auction.connect(alice).commitBid(hash, { value: ethers.parseEther("2") })
+        auction
+          .connect(alice)
+          .commitBid(hash, { value: ethers.parseEther("2") })
       ).to.be.revertedWithCustomError(auction, "CommitPhaseEnded");
     });
   });
@@ -124,8 +145,12 @@ describe("VickreyAuction", function () {
       const amountA = ethers.parseEther("3"); // Alice - highest
       const amountB = ethers.parseEther("2"); // Bob - second highest
 
-      await auction.connect(alice).commitBid(generateHash(amountA, saltA), { value: amountA });
-      await auction.connect(bob).commitBid(generateHash(amountB, saltB), { value: amountB });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amountA, saltA), { value: amountA });
+      await auction
+        .connect(bob)
+        .commitBid(generateHash(amountB, saltB), { value: amountB });
 
       await increaseTime(COMMIT_DURATION + 1);
 
@@ -144,7 +169,9 @@ describe("VickreyAuction", function () {
       const wrongSalt = randomSalt();
       const amount = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amount, salt), { value: amount });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amount, salt), { value: amount });
       await increaseTime(COMMIT_DURATION + 1);
 
       await expect(
@@ -156,7 +183,9 @@ describe("VickreyAuction", function () {
       const salt = randomSalt();
       const amount = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amount, salt), { value: amount });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amount, salt), { value: amount });
       await increaseTime(COMMIT_DURATION + 1);
       await auction.connect(alice).revealBid(amount, salt);
 
@@ -169,7 +198,9 @@ describe("VickreyAuction", function () {
       const salt = randomSalt();
       const amount = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amount, salt), { value: amount });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amount, salt), { value: amount });
       await increaseTime(COMMIT_DURATION + REVEAL_DURATION + 1);
 
       await expect(
@@ -182,7 +213,9 @@ describe("VickreyAuction", function () {
       const deposit = ethers.parseEther("2");
       const claimedAmount = ethers.parseEther("5"); // lying about a higher bid than deposited
 
-      await auction.connect(alice).commitBid(generateHash(claimedAmount, salt), { value: deposit });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(claimedAmount, salt), { value: deposit });
       await increaseTime(COMMIT_DURATION + 1);
 
       await expect(
@@ -215,17 +248,25 @@ describe("VickreyAuction", function () {
       const amountA = ethers.parseEther("3");
       const amountB = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amountA, saltA), { value: amountA });
-      await auction.connect(bob).commitBid(generateHash(amountB, saltB), { value: amountB });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amountA, saltA), { value: amountA });
+      await auction
+        .connect(bob)
+        .commitBid(generateHash(amountB, saltB), { value: amountB });
       await increaseTime(COMMIT_DURATION + 1);
       await auction.connect(alice).revealBid(amountA, saltA);
       await auction.connect(bob).revealBid(amountB, saltB);
       await increaseTime(REVEAL_DURATION + 1);
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceBefore = await ethers.provider.getBalance(
+        seller.address
+      );
       const tx = await auction.finalizeAuction();
       await tx.wait();
-      const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceAfter = await ethers.provider.getBalance(
+        seller.address
+      );
 
       expect(sellerBalanceAfter - sellerBalanceBefore).to.equal(amountB);
     });
@@ -234,13 +275,19 @@ describe("VickreyAuction", function () {
       const salt = randomSalt();
       const amount = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amount, salt), { value: amount });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amount, salt), { value: amount });
       // Alice never reveals
       await increaseTime(COMMIT_DURATION + REVEAL_DURATION + 1);
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceBefore = await ethers.provider.getBalance(
+        seller.address
+      );
       await auction.finalizeAuction();
-      const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceAfter = await ethers.provider.getBalance(
+        seller.address
+      );
 
       // No winner => sellerAmount = 0 in finalize (penalty collected later via withdrawRefund)
       expect(sellerBalanceAfter).to.equal(sellerBalanceBefore);
@@ -270,8 +317,12 @@ describe("VickreyAuction", function () {
       const amountB = ethers.parseEther("2");
       const depositA = ethers.parseEther("4"); // deposited more than bid
 
-      await auction.connect(alice).commitBid(generateHash(amountA, saltA), { value: depositA });
-      await auction.connect(bob).commitBid(generateHash(amountB, saltB), { value: amountB });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amountA, saltA), { value: depositA });
+      await auction
+        .connect(bob)
+        .commitBid(generateHash(amountB, saltB), { value: amountB });
       await increaseTime(COMMIT_DURATION + 1);
       await auction.connect(alice).revealBid(amountA, saltA);
       await auction.connect(bob).revealBid(amountB, saltB);
@@ -291,8 +342,12 @@ describe("VickreyAuction", function () {
       const amountA = ethers.parseEther("3");
       const amountB = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amountA, saltA), { value: amountA });
-      await auction.connect(bob).commitBid(generateHash(amountB, saltB), { value: amountB });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amountA, saltA), { value: amountA });
+      await auction
+        .connect(bob)
+        .commitBid(generateHash(amountB, saltB), { value: amountB });
       await increaseTime(COMMIT_DURATION + 1);
       await auction.connect(alice).revealBid(amountA, saltA);
       await auction.connect(bob).revealBid(amountB, saltB);
@@ -309,7 +364,9 @@ describe("VickreyAuction", function () {
       const amount = ethers.parseEther("2");
       const deposit = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amount, salt), { value: deposit });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amount, salt), { value: deposit });
       // Alice never reveals
       await increaseTime(COMMIT_DURATION + REVEAL_DURATION + 1);
       await auction.finalizeAuction();
@@ -317,21 +374,29 @@ describe("VickreyAuction", function () {
       const expectedPenalty = (deposit * PENALTY_PERCENT) / 100n;
       const expectedPayout = deposit - expectedPenalty;
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceBefore = await ethers.provider.getBalance(
+        seller.address
+      );
 
       await expect(auction.connect(alice).withdrawRefund())
         .to.emit(auction, "RefundWithdrawn")
         .withArgs(alice.address, expectedPayout);
 
-      const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
-      expect(sellerBalanceAfter - sellerBalanceBefore).to.equal(expectedPenalty);
+      const sellerBalanceAfter = await ethers.provider.getBalance(
+        seller.address
+      );
+      expect(sellerBalanceAfter - sellerBalanceBefore).to.equal(
+        expectedPenalty
+      );
     });
 
     it("should revert on double withdrawal", async function () {
       const salt = randomSalt();
       const amount = ethers.parseEther("2");
 
-      await auction.connect(alice).commitBid(generateHash(amount, salt), { value: amount });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amount, salt), { value: amount });
       await increaseTime(COMMIT_DURATION + 1);
       await auction.connect(alice).revealBid(amount, salt);
       await increaseTime(REVEAL_DURATION + 1);
@@ -355,11 +420,17 @@ describe("VickreyAuction", function () {
       const amountB = ethers.parseEther("3"); // Bob - second highest, reveals
       const depositC = ethers.parseEther("2"); // Carol - commits, never reveals
 
-      await auction.connect(alice).commitBid(generateHash(amountA, saltA), { value: amountA });
-      await auction.connect(bob).commitBid(generateHash(amountB, saltB), { value: amountB });
-      await auction.connect(carol).commitBid(generateHash(ethers.parseEther("2"), saltC), {
-        value: depositC,
-      });
+      await auction
+        .connect(alice)
+        .commitBid(generateHash(amountA, saltA), { value: amountA });
+      await auction
+        .connect(bob)
+        .commitBid(generateHash(amountB, saltB), { value: amountB });
+      await auction
+        .connect(carol)
+        .commitBid(generateHash(ethers.parseEther("2"), saltC), {
+          value: depositC,
+        });
 
       await increaseTime(COMMIT_DURATION + 1);
       await auction.connect(alice).revealBid(amountA, saltA);
@@ -368,7 +439,9 @@ describe("VickreyAuction", function () {
 
       await increaseTime(REVEAL_DURATION + 1);
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceBefore = await ethers.provider.getBalance(
+        seller.address
+      );
       await auction.finalizeAuction();
 
       // Alice wins, pays amountB (second highest)
@@ -387,9 +460,13 @@ describe("VickreyAuction", function () {
         .to.emit(auction, "RefundWithdrawn")
         .withArgs(carol.address, depositC - carolPenalty);
 
-      const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
+      const sellerBalanceAfter = await ethers.provider.getBalance(
+        seller.address
+      );
       // seller got amountB at finalize + carol's penalty at her withdrawal
-      expect(sellerBalanceAfter - sellerBalanceBefore).to.equal(amountB + carolPenalty);
+      expect(sellerBalanceAfter - sellerBalanceBefore).to.equal(
+        amountB + carolPenalty
+      );
     });
   });
 });

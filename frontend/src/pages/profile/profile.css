@@ -1,177 +1,177 @@
 .profile-page {
-    max-width: 640px;
-    margin: 0 auto;
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-    padding-bottom: 60px;
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding-bottom: 60px;
 }
 
 .profile-header {
-    text-align: center;
+  text-align: center;
 }
 
 .profile-header h1 {
-    margin: 0 0 6px;
-    font-size: 1.5rem;
-    color: #f4f4f5;
+  margin: 0 0 6px;
+  font-size: 1.5rem;
+  color: #f4f4f5;
 }
 
 .profile-header p {
-    margin: 0;
-    color: #8b8b90;
-    font-size: 0.9rem;
+  margin: 0;
+  color: #8b8b90;
+  font-size: 0.9rem;
 }
 
 .profile-card {
-    background-color: #2a2a2e;
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 14px;
-    overflow: hidden;
+  background-color: #2a2a2e;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 14px;
+  overflow: hidden;
 }
 
 .profile-card-header {
-    padding: 16px 24px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: #f4f4f5;
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f4f4f5;
 }
 
 .profile-card-body {
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
 .field-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .field-group label {
-    font-size: 0.82rem;
-    color: #8b8b90;
-    font-weight: 500;
+  font-size: 0.82rem;
+  color: #8b8b90;
+  font-weight: 500;
 }
 
 .field-group input {
-    background-color: #1c1c1f;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 10px 12px;
-    color: #f4f4f5;
-    font-size: 0.9rem;
-    font-family: inherit;
-    outline: none;
-    transition: border-color 0.15s ease;
+  background-color: #1c1c1f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #f4f4f5;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .field-group input:focus {
-    border-color: #4f8ef7;
+  border-color: #4f8ef7;
 }
 
 .profile-card-footer {
-    display: flex;
-    justify-content: flex-end;
+  display: flex;
+  justify-content: flex-end;
 }
 
 .save-button {
-    background-color: #4f8ef7;
-    color: #ffffff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    font-size: 0.88rem;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
+  background-color: #4f8ef7;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .save-button:hover:not(:disabled) {
-    background-color: #3d7ce0;
+  background-color: #3d7ce0;
 }
 
 .save-button:disabled {
-    background-color: #3a3a3e;
-    color: #6b6b70;
-    cursor: not-allowed;
+  background-color: #3a3a3e;
+  color: #6b6b70;
+  cursor: not-allowed;
 }
 
 .wallet-address-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background-color: #1c1c1f;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #1c1c1f;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 10px 12px;
 }
 
 .wallet-address-row span {
-    color: #f4f4f5;
-    font-size: 0.9rem;
+  color: #f4f4f5;
+  font-size: 0.9rem;
 }
 
 .copy-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: none;
-    border: none;
-    color: #4f8ef7;
-    font-size: 0.82rem;
-    cursor: pointer;
-    padding: 4px 8px;
-    border-radius: 6px;
-    transition: background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  color: #4f8ef7;
+  font-size: 0.82rem;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
 }
 
 .copy-button:hover {
-    background-color: rgba(79, 142, 247, 0.1);
+  background-color: rgba(79, 142, 247, 0.1);
 }
 
 .status-pill {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    width: fit-content;
-    font-size: 0.85rem;
-    color: #d4d4d8;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  font-size: 0.85rem;
+  color: #d4d4d8;
 }
 
 .wallet-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 4px;
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
 }
 
 .wallet-action-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #d4d4d8;
-    padding: 9px 16px;
-    border-radius: 8px;
-    font-size: 0.85rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background-color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d4d4d8;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
 
 .wallet-action-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .wallet-action-btn.danger {
-    color: #f87171;
-    border-color: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.2);
 }
 
 .wallet-action-btn.danger:hover {
-    background-color: rgba(248, 113, 113, 0.1);
+  background-color: rgba(248, 113, 113, 0.1);
 }
