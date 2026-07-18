@@ -1,5 +1,5 @@
 import { Document } from "mongoose";
-import Auction from "../models/Auction.js";
+import Auction from "../models/auction.js";
 import { uploadImage, uploadDocument } from "../services/uploadService.js";
 export async function createAuction(req, res) {
   try {

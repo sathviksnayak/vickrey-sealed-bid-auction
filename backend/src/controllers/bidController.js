@@ -1,4 +1,4 @@
-import Bid from "../models/Bid.js";
+import Bid from "../models/bid.js";
 
 export async function createBid(req, res) {
   try {
