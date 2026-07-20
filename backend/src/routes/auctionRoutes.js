@@ -15,11 +15,12 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  validateAuction,
+  
   upload.fields([
     { name: "images", maxCount: 5 },
     { name: "documents", maxCount: 3 },
   ]),
+  validateAuction,
   createAuction
 );
 
