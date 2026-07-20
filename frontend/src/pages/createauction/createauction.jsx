@@ -92,7 +92,7 @@ export default function CreateAuction() {
       return;
     }
 
-    const formData = new FormData();
+  
 
     try {
       if (!(await auth.ensureAuthenticated())) return;
@@ -132,15 +132,15 @@ export default function CreateAuction() {
       const commitDeadline = now + Number(commitDuration);
       const revealDeadline = commitDeadline + Number(revealDuration);
 
-      tx.goTo("saving");
+tx.goTo("saving");
 
       const formData = new FormData();
 
       formData.append("title", values.title);
       formData.append("description", values.description);
       formData.append("category", values.category);
-      formData.append("commitDeadline", values.commitDeadline);
-      formData.append("revealDeadline", values.revealDeadline);
+      formData.append("commitDeadline", commitDeadline);
+      formData.append("revealDeadline", revealDeadline);
       formData.append("penalty", values.penalty);
       formData.append("auctionAddress", newestAuction);
 
@@ -153,13 +153,14 @@ export default function CreateAuction() {
       });
 
       try {
-        const { valid, errors, values } = validateAuctionForm(formData);
-        await createAuction(values);
+        await createAuction(formData);
       } catch (saveErr) {
         console.error(saveErr);
         tx.fail("Failed to Save Auction");
-        return; // auction exists on-chain but metadata failed — don't wipe the form
+        return;
       }
+
+    
 
       tx.succeed();
 

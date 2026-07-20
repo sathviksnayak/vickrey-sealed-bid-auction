@@ -4,6 +4,7 @@ export function validateAuctionForm(form) {
     description: form.description.trim(),
     category: form.category.trim(),
     reservePrice: Number(form.reservePrice),
+    penalty: Number(form.penalty),
     commitDuration: Number(form.commitDuration),
     revealDuration: Number(form.revealDuration),
   };
@@ -22,6 +23,9 @@ export function validateAuctionForm(form) {
 
   if (Number.isNaN(sanitized.reservePrice) || sanitized.reservePrice <= 0)
     errors.reservePrice = "Reserve price must be greater than 0.";
+
+  if (Number.isNaN(sanitized.penalty) || sanitized.penalty < 0 || sanitized.penalty > 100)
+    errors.penalty = "Penalty must be between 0 and 100.";
 
   if (Number.isNaN(sanitized.commitDuration) || sanitized.commitDuration < 1)
     errors.commitDuration = "Commit duration must be at least 1 minute.";
