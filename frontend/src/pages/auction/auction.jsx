@@ -33,7 +33,7 @@ export default function Auction() {
   const [auction, setAuction] = useState(null);
   const [bidAmount, setBidAmount] = useState("");
   const [salt, setSalt] = useState("");
-  const [contract, setContract] = useState(null);
+
   const [hasWithdrawn, setHasWithdrawn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const tx = useTransactionModal();
@@ -43,36 +43,31 @@ export default function Auction() {
     successMessage: "",
   });
 
-  async function loadAuction() {
-    let auctionContract = contract;
+async function loadAuction() {
+  const provider = new ethers.BrowserProvider(window.ethereum);
+  const signer = await provider.getSigner();
 
-    if (!auctionContract) {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
+  const contract = new ethers.Contract(address, ABI, signer);
 
-      auctionContract = new ethers.Contract(address, ABI, signer);
-      setContract(auctionContract);
-    }
+  const [metadata, chainData] = await Promise.all([
+    getAuction(address),
+    getAuctionChainData(address, contract.runner),
+  ]);
 
-    const [metadata, chainData] = await Promise.all([
-      getAuction(address),
-      getAuctionChainData(address, auctionContract.runner),
-    ]);
+  setAuction({
+    ...metadata,
+    ...chainData,
+    status: getStatus(
+      chainData.commitDeadline,
+      chainData.revealDeadline,
+      chainData.finalized
+    ),
+  });
+}
 
-    setAuction({
-      ...metadata,
-      ...chainData,
-      status: getStatus(
-        chainData.commitDeadline,
-        chainData.revealDeadline,
-        chainData.finalized
-      ),
-    });
-  }
-
-  useEffect(() => {
-    loadAuction();
-  }, [address, contract]);
+useEffect(() => {
+  loadAuction();
+}, [address, account]);
 
   function getStatus(commitDeadline, revealDeadline, finalized) {
     const now = Math.floor(Date.now() / 1000);
@@ -137,9 +132,11 @@ export default function Auction() {
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
-
+      const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+       const Contract = new ethers.Contract(address, ABI, signer);
       const bidHash = hashBid(amount, salt);
-      const txResult = await contract.commitBid(bidHash, { value: amount });
+      const txResult = await Contract.commitBid(bidHash, { value: amount });
 
       tx.goTo("pending");
       await txResult.wait();
@@ -157,7 +154,7 @@ export default function Auction() {
       await loadAuction();
       tx.succeed();
     } catch (err) {
-      console.error(err);
+   
       tx.fail(err);
     } finally {
       setIsSubmitting(false);
@@ -194,8 +191,10 @@ export default function Auction() {
 
       const amount = ethers.parseEther(bidAmount);
       const saltBytes = ethers.encodeBytes32String(salt);
-
-      const txResult = await contract.revealBid(amount, saltBytes);
+      const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+       const Contract = new ethers.Contract(address, ABI, signer);
+      const txResult = await Contract.revealBid(amount, saltBytes);
 
       tx.goTo("pending");
       await txResult.wait();
@@ -210,7 +209,7 @@ export default function Auction() {
       await loadAuction();
       tx.succeed();
     } catch (err) {
-      console.error(err);
+      
       tx.fail(err);
     } finally {
       setIsSubmitting(false);
@@ -238,8 +237,10 @@ export default function Auction() {
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
-
-      const txResult = await contract.finalizeAuction();
+      const provider = new ethers.BrowserProvider(window.ethereum);
+const signer = await provider.getSigner();
+       const Contract = new ethers.Contract(address, ABI, signer);
+      const txResult = await Contract.finalizeAuction();
 
       tx.goTo("pending");
       await txResult.wait();
@@ -247,12 +248,8 @@ export default function Auction() {
       await loadAuction();
       tx.succeed();
     } catch (err) {
-      console.error(err);
-      tx.fail(
-        err.code === "ACTION_REJECTED"
-          ? "Transaction Rejected"
-          : err.shortMessage || err.reason || "Finalization Failed"
-      );
+
+      tx.fail(err );
     } finally {
       setIsSubmitting(false);
     }
@@ -279,8 +276,10 @@ export default function Auction() {
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
-
-      const txResult = await contract.withdrawRefund();
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+       const Contract = new ethers.Contract(address, ABI, signer);
+      const txResult = await Contract.withdrawRefund();
 
       tx.goTo("pending");
       await txResult.wait();
@@ -516,7 +515,7 @@ export default function Auction() {
             <div key={action.key} className="action-item">
               <button
                 className="action-button"
-                disabled={!contract || !action.enabled || isSubmitting}
+                disabled={ !action.enabled || isSubmitting}
                 onClick={action.onClick}
               >
                 {action.label}

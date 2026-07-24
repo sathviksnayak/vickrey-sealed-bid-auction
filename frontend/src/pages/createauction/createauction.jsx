@@ -182,8 +182,8 @@ export default function CreateAuction() {
       try {
         await createAuction(formData);
       } catch (saveErr) {
-        console.error(saveErr);
-        tx.fail("Failed to Save Auction");
+        
+        tx.fail("failed to save auction");
         return;
       }
 
