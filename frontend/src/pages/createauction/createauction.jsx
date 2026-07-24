@@ -54,6 +54,12 @@ export default function CreateAuction() {
       const contract = new ethers.Contract(FACTORY_ADDRESS, FactoryABI, signer);
 
       setFactory(contract);
+
+      console.log({
+  FACTORY_ADDRESS,
+  signer,
+  contract,
+});
     }
 
     loadFactory();
