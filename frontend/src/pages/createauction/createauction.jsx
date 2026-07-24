@@ -6,12 +6,15 @@ import { createAuction } from "../../services/auctionService";
 import { useWallet } from "../../context/WalletContext";
 import { useAuthGuard } from "../../hooks/useAuthGuard";
 import FactoryABI from "../../abi/AuctionFactory.json";
-import { FACTORY_ADDRESS } from "../../utils/constants";
+
 import TransactionModal from "../../components/transactionmodal/TransactionModal";
 import { useTransactionModal } from "../../hooks/useTransactionModal";
 import "./createauction.css";
 import { validateAuctionForm } from "../../utils/validate/validateAuctionForm";
+const FACTORY_ADDRESS = import.meta.env.VITE_FACTORY_ADDRESS;
 export default function CreateAuction() {
+
+  
   const auth = useAuthGuard();
   const { signer, account } = useWallet();
 
@@ -26,8 +29,10 @@ export default function CreateAuction() {
 
   const [images, setImages] = useState([]);
   const [documents, setDocuments] = useState([]);
-
+  const [errors, setErrors] = useState({});
   const [factory, setFactory] = useState(null);
+  const [commitunit, setcommitunit] = useState(Number(60));
+  const [revealunit, setrevealunit] = useState(Number(60));
 
   const [creating, setcreating] = useState(false);
 
@@ -54,6 +59,21 @@ export default function CreateAuction() {
     loadFactory();
   }, [signer]);
 
+  function handlecommitunitchange(e) {
+    setcommitunit(Number(e.target.value));
+    const newval = (commitDuration / commitunit) * Number(e.target.value);
+
+    setCommitDuration(newval);
+    
+  }
+
+  function handlerevealunitchange(e) {
+    setrevealunit(Number(e.target.value));
+    const newval = (revealDuration / revealunit) * Number(e.target.value);
+
+    setRevealDuration(newval);
+  }
+
   function handleImageChange(e) {
     const selected = Array.from(e.target.files);
     setImages((prev) => [...prev, ...selected]);
@@ -75,6 +95,7 @@ export default function CreateAuction() {
   }
 
   async function handleCreateAuction() {
+    if (creating) return;
     const form = {
       title,
       description,
@@ -88,11 +109,11 @@ export default function CreateAuction() {
     const { valid, errors, values } = validateAuctionForm(form);
 
     if (!valid) {
-      alert(" enter all feilds properly ");
+      setErrors(errors);
       return;
     }
 
-  
+    setErrors({});
 
     try {
       if (!(await auth.ensureAuthenticated())) return;
@@ -132,7 +153,7 @@ export default function CreateAuction() {
       const commitDeadline = now + Number(commitDuration);
       const revealDeadline = commitDeadline + Number(revealDuration);
 
-tx.goTo("saving");
+      tx.goTo("saving");
 
       const formData = new FormData();
 
@@ -160,8 +181,6 @@ tx.goTo("saving");
         return;
       }
 
-    
-
       tx.succeed();
 
       setTitle("");
@@ -173,6 +192,8 @@ tx.goTo("saving");
       setreservePrice("");
       setImages([]);
       setDocuments([]);
+      setcommitunit(60);
+      setrevealunit(60);
     } catch (err) {
       console.error(err);
 
@@ -198,6 +219,7 @@ tx.goTo("saving");
               onChange={(e) => setTitle(e.target.value)}
               placeholder="e.g. Vintage Playing Cards"
             />
+            {errors.title && <p className="field-error">{errors.title}</p>}
           </div>
 
           <div className="field-group">
@@ -208,6 +230,9 @@ tx.goTo("saving");
               placeholder="Describe the item..."
               rows={4}
             />
+            {errors.description && (
+              <p className="field-error">{errors.description}</p>
+            )}
           </div>
 
           <div className="field-group">
@@ -224,6 +249,9 @@ tx.goTo("saving");
               <option value="Collectibles">Collectibles</option>
               <option value="Other">Other</option>
             </select>
+            {errors.category && (
+              <p className="field-error">{errors.category}</p>
+            )}
           </div>
         </div>
 
@@ -240,8 +268,10 @@ tx.goTo("saving");
                 onChange={(e) => setreservePrice(e.target.value)}
                 placeholder="0.01"
               />
+              {errors.reservePrice && (
+                <p className="field-error">{errors.reservePrice}</p>
+              )}
             </div>
-
             <div className="field-group">
               <label>Penalty (%)</label>
               <input
@@ -252,28 +282,60 @@ tx.goTo("saving");
                 value={penalty}
                 placeholder="10"
               />
+              {errors.penalty && (
+                <p className="field-error">{errors.penalty}</p>
+              )}
             </div>
           </div>
 
           <div className="two-col-grid">
             <div className="field-group">
-              <label>Commit Duration (min)</label>
+              <label>Commit Duration </label>
               <input
+                name="commit"
                 type="number"
-                onChange={(e) => setCommitDuration(Number(e.target.value) * 60)}
-                value={commitDuration / 60}
+                onChange={(e) =>{
+                  setCommitDuration(Number(e.target.value * commitunit))
+                
+
+            }
+                }
+                value={commitDuration / (commitunit)}
                 placeholder="30"
               />
+              <select value={commitunit} onChange={handlecommitunitchange}>
+                <option value="60">min</option>
+                <option value="3600">hr</option>
+                <option value="86400">days</option>
+              </select>
+              {errors.commitDuration && (
+                <p className="field-error">{errors.commitDuration}</p>
+              )}
             </div>
 
             <div className="field-group">
-              <label>Reveal Duration (min)</label>
+              <label>Reveal Duration </label>
               <input
+                name="reveal"
                 type="number"
-                onChange={(e) => setRevealDuration(Number(e.target.value) * 60)}
-                value={revealDuration / 60}
+                onChange={(e) =>{
+                  setRevealDuration(Number(e.target.value * revealunit))
+                  
+                }
+                }
+                value={revealDuration / (revealunit)}
                 placeholder="15"
               />
+
+              <select value={revealunit} onChange={handlerevealunitchange}>
+                <option value="60">min</option>
+                <option value="3600">hr</option>
+                <option value="86400">days</option>
+              </select>
+
+              {errors.revealDuration && (
+                <p className="field-error">{errors.revealDuration}</p>
+              )}
             </div>
           </div>
         </div>

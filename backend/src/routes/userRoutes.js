@@ -1,5 +1,7 @@
 import express from "express";
 import { authMiddleware } from "../middleware/authMiddleware.js";
+
+import { validateProfile } from "../middleware/profilevalidation.js";
 import {
   createUser,
   getUser,
@@ -12,6 +14,6 @@ router.post("/", createUser);
 
 router.get("/:wallet", getUser);
 
-router.put("/", authMiddleware, updateUser);
+router.put("/", authMiddleware, validateProfile, updateUser);
 
 export default router;

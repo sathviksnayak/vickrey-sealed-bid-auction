@@ -156,7 +156,7 @@ PORT=5000
 Create a `.env` file in `frontend/` with:
 
 ```
-REACT_APP_CONTRACT_ADDRESS=your_deployed_contract_address
+
 REACT_APP_API_URL=http://localhost:5000
 ```
 

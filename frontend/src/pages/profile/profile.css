@@ -175,3 +175,8 @@
 .wallet-action-btn.danger:hover {
   background-color: rgba(248, 113, 113, 0.1);
 }
+.field-error {
+  color: #f76f6f;
+  font-size: 0.8rem;
+  margin-top: 4px;
+}

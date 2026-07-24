@@ -34,7 +34,8 @@ export default function Auction() {
   const [bidAmount, setBidAmount] = useState("");
   const [salt, setSalt] = useState("");
   const [contract, setContract] = useState(null);
-
+  const [hasWithdrawn, setHasWithdrawn] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const tx = useTransactionModal();
   const [modalMeta, setModalMeta] = useState({
     title: "",
@@ -103,6 +104,8 @@ export default function Auction() {
 
   // ---------- Commit ----------
   async function handleCommit() {
+    if (isSubmitting) return;
+
     if (!bidAmount || !salt) {
       alert("Please enter both bid amount and secret.");
       return;
@@ -114,6 +117,7 @@ export default function Auction() {
       alert("Bid must be at least the reserve price.");
       return;
     }
+    setIsSubmitting(true);
 
     setModalMeta({
       title: "Submitting Bid",
@@ -129,6 +133,7 @@ export default function Auction() {
 
     try {
       if (!(await auth.ensureAuthenticated())) return;
+
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
@@ -154,15 +159,19 @@ export default function Auction() {
     } catch (err) {
       console.error(err);
       tx.fail(err);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   // ---------- Reveal ----------
   async function handleReveal() {
+    if (isSubmitting) return;
     if (!bidAmount || !salt) {
       alert("Please enter both bid amount and secret.");
       return;
     }
+    setIsSubmitting(true);
 
     setModalMeta({
       title: "Revealing Bid",
@@ -178,6 +187,7 @@ export default function Auction() {
 
     try {
       if (!(await auth.ensureAuthenticated())) return;
+
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
@@ -202,11 +212,15 @@ export default function Auction() {
     } catch (err) {
       console.error(err);
       tx.fail(err);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   // ---------- Finalize ----------
   async function handleFinalize() {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setModalMeta({
       title: "Finalizing Auction",
       steps: [
@@ -220,6 +234,7 @@ export default function Auction() {
 
     try {
       if (!(await auth.ensureAuthenticated())) return;
+
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
@@ -238,11 +253,15 @@ export default function Auction() {
           ? "Transaction Rejected"
           : err.shortMessage || err.reason || "Finalization Failed"
       );
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
   // ---------- Withdraw ----------
   async function handleWithdraw() {
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     setModalMeta({
       title: "Withdrawing Funds",
       steps: [
@@ -256,6 +275,7 @@ export default function Auction() {
 
     try {
       if (!(await auth.ensureAuthenticated())) return;
+
       tx.start("connecting");
       await new Promise((res) => setTimeout(res, 300));
       tx.goTo("signature");
@@ -264,12 +284,14 @@ export default function Auction() {
 
       tx.goTo("pending");
       await txResult.wait();
-
+      setHasWithdrawn(true);
       await loadAuction();
       tx.succeed();
     } catch (err) {
       console.error(err);
       tx.fail(err);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -300,8 +322,8 @@ export default function Auction() {
     {
       key: "reveal",
       label: "Reveal Bid",
-      enabled: isRevealPhase,
-      reason: !isRevealPhase
+      enabled: isRevealPhase && !isSeller,
+      reason: isSeller?"Sellers cannot bid on their own auction.":!isRevealPhase
         ? isCommitPhase
           ? "Reveal phase has not started yet."
           : "Reveal phase has ended."
@@ -322,11 +344,13 @@ export default function Auction() {
     },
     {
       key: "withdraw",
-      label: "Withdraw Funds",
-      enabled: isFinalized,
-      reason: !isFinalized
-        ? "Withdrawals become available once the auction is finalized."
-        : null,
+      label: hasWithdrawn ? "Withdrawn" : "Withdraw Funds",
+      enabled: isFinalized && !hasWithdrawn,
+      reason: hasWithdrawn
+        ? null
+        : !isFinalized
+          ? "Withdrawals become available once the auction is finalized."
+          : null,
       onClick: handleWithdraw,
     },
   ];
@@ -492,7 +516,7 @@ export default function Auction() {
             <div key={action.key} className="action-item">
               <button
                 className="action-button"
-                disabled={!contract || !action.enabled}
+                disabled={!contract || !action.enabled || isSubmitting}
                 onClick={action.onClick}
               >
                 {action.label}

@@ -55,7 +55,7 @@ export default function Topbar({ sidebarOpen, setSidebarOpen }) {
           <Menu size={20} />
         </button>
 
-        <img src="/logo.png" alt="BidForge" className="logo" />
+        <img src="/logo.webp" alt="BidForge" className="logo" />
 
         <Link to="/" className="topbar-logo">
           BidForge

@@ -67,7 +67,7 @@ export default function MyAuctions() {
   if (loading) {
     return (
       <>
-        <h2>Loading auctions...</h2>
+        <h2>Loading your auctions...</h2>
         {auth.modal}
       </>
     );

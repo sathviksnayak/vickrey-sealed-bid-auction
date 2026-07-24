@@ -18,6 +18,7 @@ export default function Profile() {
   const [saving, setSaving] = useState(false);
   const [copied, setCopied] = useState(false);
   const [network, setnetwork] = useState("");
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     if (!account) return;
@@ -52,8 +53,17 @@ export default function Profile() {
         username,
         email,
       });
+      setErrors({});
     } catch (err) {
-      console.error(err);
+      if (err.response?.data?.errors) {
+        const validationErrors = {};
+
+        err.response.data.errors.forEach((error) => {
+          validationErrors[error.path] = error.msg;
+        });
+
+        setErrors(validationErrors);
+      }
     } finally {
       setSaving(false);
     }
@@ -103,9 +113,15 @@ export default function Profile() {
             <input
               type="text"
               value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              onChange={(e) => {
+                setUsername(e.target.value);
+                setErrors((prev) => ({ ...prev, username: undefined }));
+              }}
               placeholder="Enter a username"
             />
+            {errors.username && (
+              <p className="field-error">{errors.username}</p>
+            )}
           </div>
 
           <div className="field-group">
@@ -113,11 +129,14 @@ export default function Profile() {
             <input
               type="email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                setErrors((prev) => ({ ...prev, email: undefined }));
+              }}
               placeholder="you@example.com"
             />
+            {errors.email && <p className="field-error">{errors.email}</p>}
           </div>
-
           <div className="profile-card-footer">
             <button
               className="save-button"

@@ -15,7 +15,7 @@ const router = express.Router();
 router.post(
   "/",
   authMiddleware,
-  
+
   upload.fields([
     { name: "images", maxCount: 5 },
     { name: "documents", maxCount: 3 },
