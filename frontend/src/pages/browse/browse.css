@@ -1,13 +1,117 @@
-.auction-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-  justify-content: center; /* don't hug the left edge */
+.browse-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
 }
 
-@media (min-width: 1500px) {
+.browse-controls select {
+  appearance: none;
+  -webkit-appearance: none;
+
+  min-width: 170px;
+  height: 42px;
+
+  padding: 0 42px 0 14px;
+
+  color: #e4e4e7;
+  background-color: #1c1c20;
+
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='%23a1a1aa' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'></polyline></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 15px;
+
+  border: 1px solid #2d2d33;
+  border-radius: 10px;
+
+  font-size: 0.875rem;
+  font-weight: 500;
+
+  cursor: pointer;
+  outline: none;
+
+  transition:
+    border-color 0.18s ease,
+    background-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.browse-controls select:hover {
+  background-color: #222226;
+  border-color: #3f3f46;
+}
+
+.browse-controls select:focus {
+  background-color: #222226;
+  border-color: #4f8ef7;
+  box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.12);
+}
+
+.browse-controls select:active {
+  transform: scale(0.99);
+}
+
+.browse-controls select option {
+  background-color: #1c1c20;
+  color: #e4e4e7;
+}
+
+/* Auction grid */
+
+.auction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 22px;
+
+  margin-top: 26px;
+  width: 100%;
+}
+
+/* Keep the cards nicely centered on very wide screens */
+
+@media (min-width: 1400px) {
   .auction-grid {
-    grid-template-columns: repeat(4, minmax(340px, 360px));
+    grid-template-columns: repeat(4, minmax(280px, 1fr));
+    max-width: 1480px;
+  }
+}
+
+@media (min-width: 1700px) {
+  .auction-grid {
+    grid-template-columns: repeat(4, 340px);
+  }
+}
+
+/* Tablet */
+
+@media (max-width: 900px) {
+  .auction-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+}
+
+/* Mobile */
+
+@media (max-width: 600px) {
+  .browse-controls {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .browse-controls select {
+    flex: 1;
+    min-width: 0;
+    width: 100%;
+  }
+
+  .auction-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 20px;
   }
 }

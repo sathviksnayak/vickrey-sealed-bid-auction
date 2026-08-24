@@ -1,12 +1,15 @@
 .sidebar {
-  position: relative; /* establish stacking context */
+  position: sticky;
+  top: 72px; /* matches your topbar height */
+  height: calc(100vh - 72px);
+  overflow-y: auto;
   z-index: 10;
   width: 240px;
   background-color: #18181b;
   border-right: 1px solid rgba(255, 255, 255, 0.06);
   padding: 24px 0;
   transition: width 0.2s ease;
-  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .sidebar-collapsed {

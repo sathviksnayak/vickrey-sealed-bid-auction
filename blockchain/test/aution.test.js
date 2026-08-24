@@ -1,3 +1,4 @@
+
 const { expect } = require("chai");
 const { ethers } = require("hardhat");
 
@@ -259,14 +260,9 @@ describe("VickreyAuction", function () {
       await auction.connect(bob).revealBid(amountB, saltB);
       await increaseTime(REVEAL_DURATION + 1);
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(
-        seller.address
-      );
-      const tx = await auction.finalizeAuction();
-      await tx.wait();
-      const sellerBalanceAfter = await ethers.provider.getBalance(
-        seller.address
-      );
+      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      await auction.connect(carol).finalizeAuction(); // carol pays gas, not seller
+      const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
 
       expect(sellerBalanceAfter - sellerBalanceBefore).to.equal(amountB);
     });
@@ -278,18 +274,12 @@ describe("VickreyAuction", function () {
       await auction
         .connect(alice)
         .commitBid(generateHash(amount, salt), { value: amount });
-      // Alice never reveals
       await increaseTime(COMMIT_DURATION + REVEAL_DURATION + 1);
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(
-        seller.address
-      );
-      await auction.finalizeAuction();
-      const sellerBalanceAfter = await ethers.provider.getBalance(
-        seller.address
-      );
+      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      await auction.connect(carol).finalizeAuction(); // carol pays gas, not seller
+      const sellerBalanceAfter = await ethers.provider.getBalance(seller.address);
 
-      // No winner => sellerAmount = 0 in finalize (penalty collected later via withdrawRefund)
       expect(sellerBalanceAfter).to.equal(sellerBalanceBefore);
     });
   });
@@ -439,10 +429,8 @@ describe("VickreyAuction", function () {
 
       await increaseTime(REVEAL_DURATION + 1);
 
-      const sellerBalanceBefore = await ethers.provider.getBalance(
-        seller.address
-      );
-      await auction.finalizeAuction();
+      const sellerBalanceBefore = await ethers.provider.getBalance(seller.address);
+      await auction.connect(carol).finalizeAuction();
 
       // Alice wins, pays amountB (second highest)
       await expect(auction.connect(alice).withdrawRefund())

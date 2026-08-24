@@ -136,3 +136,8 @@
 .my-auction-card:hover .view-link {
   transform: translateX(3px);
 }
+.auction-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}

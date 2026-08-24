@@ -40,6 +40,8 @@ contract VickreyAuction  {
 
     error InvalidPenaltyPercent();
 
+    error SellerCannotBid();
+
     //error BidBelowReservePrice();
 
 
@@ -123,6 +125,10 @@ contract VickreyAuction  {
 //functions
 
     function commitBid(bytes32 bidHash) external payable {
+            if (msg.sender == seller) {
+            revert SellerCannotBid();
+        }
+
 
         if(block.timestamp >= commitDeadline) {
             revert CommitPhaseEnded();

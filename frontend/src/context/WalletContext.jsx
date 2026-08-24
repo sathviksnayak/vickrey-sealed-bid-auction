@@ -1,4 +1,10 @@
-import { createContext, useContext, useState, useEffect, useRef } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
 import { ethers } from "ethers";
 import { jwtDecode } from "jwt-decode";
 
@@ -9,27 +15,33 @@ const WalletContext = createContext();
 
 export function WalletProvider({ children }) {
   const [authenticated, setAuthenticated] = useState(false);
-
   const [account, setAccount] = useState("");
+
   const [provider] = useState(() => {
     if (!window.ethereum) return null;
     return new ethers.BrowserProvider(window.ethereum);
   });
-  const [signer, setSigner] = useState(null);
 
-  // Tracks whether the *next* accountsChanged event should be ignored,
-  // because we triggered the account change ourselves via switchAccount()
+  const [signer, setSigner] = useState(null);
+  const [walletError, setWalletError] = useState(null);
+
+  // Tracks whether the next accountsChanged event should be ignored,
+  // because we triggered the account change ourselves via switchAccount().
   const suppressNextAccountsChanged = useRef(false);
 
   function hasValidTokenFor(walletAddress) {
     const token = localStorage.getItem("token");
+
     if (!token) return false;
 
     try {
       const decoded = jwtDecode(token);
+
       const matches =
         decoded.wallet?.toLowerCase() === walletAddress?.toLowerCase();
+
       const notExpired = decoded.exp > Date.now() / 1000;
+
       return matches && notExpired;
     } catch {
       localStorage.removeItem("token");
@@ -44,38 +56,55 @@ export function WalletProvider({ children }) {
       setSigner(walletSigner);
       setAccount(addr);
 
+      // Clear any stale wallet connection error once
+      // the wallet has been successfully initialized.
+      setWalletError(null);
+
       const user = await getUser(addr);
 
       if (!user) {
         await createUser(addr);
       }
+
       return addr;
     } catch (err) {
-      console.error(err);
+      console.error("Failed to initialize wallet user:", err);
+
+      // Do not swallow the error.
+      // Let connectWallet()/restoreWallet() handle it.
+      throw err;
     }
   }
 
-  // Full auth flow: request accounts, sign nonce, get JWT.
-  // Only actually prompts for a signature if there's no valid token for the active account.
+  // Full authentication flow:
+  // request accounts → initialize user → check JWT →
+  // sign nonce if necessary → receive JWT.
   async function connectWallet() {
     if (!provider) {
-      alert("Please install MetaMask");
-      return;
+      setWalletError(
+        "MetaMask not detected. Please install it to continue."
+      );
+      return false;
     }
 
     try {
+      setWalletError(null);
+
       await provider.send("eth_requestAccounts", []);
 
       const walletSigner = await provider.getSigner();
       const addr = await initializeUser(walletSigner);
 
       if (hasValidTokenFor(addr)) {
-        console.log("Valid token exists for this account");
+        setAuthenticated(true);
+        setWalletError(null);
         return true;
       }
 
       const { nonce } = await createNonce(addr);
+
       const message = `Welcome to Vickrey Auction Nonce: ${nonce}`;
+
       const signature = await walletSigner.signMessage(message);
 
       const { token } = await Login({
@@ -84,35 +113,53 @@ export function WalletProvider({ children }) {
       });
 
       localStorage.setItem("token", token);
+
+      setAuthenticated(true);
+      setWalletError(null);
+
+      return true;
     } catch (err) {
-      console.error(err);
-    } finally {
+      console.error("Failed to connect wallet:", err);
+
+      setWalletError("Failed to connect wallet. Please try again.");
+
+      return false;
     }
   }
 
   async function switchAccount() {
     if (!provider) {
-      alert("Please install MetaMask");
+      setWalletError(
+        "MetaMask not detected. Please install it to continue."
+      );
       return;
     }
 
     try {
-      // We're intentionally changing accounts — don't let the
-      // accountsChanged listener also react and reload underneath us
+      setWalletError(null);
+
+      // We're intentionally changing accounts.
+      // Don't let accountsChanged listener react separately.
       suppressNextAccountsChanged.current = true;
 
       localStorage.removeItem("token");
+
       setSigner(null);
       setAccount("");
+      setAuthenticated(false);
 
       await window.ethereum.request({
         method: "wallet_requestPermissions",
         params: [{ eth_accounts: {} }],
       });
 
-      await connectWallet(); // this will prompt for a fresh signature, since token was just cleared
+      // connectWallet() will prompt for a fresh signature
+      // because the previous token was removed.
+      await connectWallet();
     } catch (err) {
-      console.error(err);
+      console.error("Failed to switch account:", err);
+
+      setWalletError("Failed to switch account. Please try again.");
     } finally {
       suppressNextAccountsChanged.current = false;
     }
@@ -120,50 +167,79 @@ export function WalletProvider({ children }) {
 
   function disconnectWallet() {
     localStorage.removeItem("token");
+
     setAccount("");
     setSigner(null);
+    setAuthenticated(false);
+    setWalletError(null);
   }
 
-  // On mount: reflect MetaMask's connected account in the UI (if any),
-  // but do NOT treat it as authenticated unless a valid matching token exists.
+  // Restore MetaMask's currently connected account on mount.
+  //
+  // This does NOT automatically request a signature.
+  // Authentication is only restored when a valid matching JWT exists.
   useEffect(() => {
     async function restoreWallet() {
       if (!provider) return;
 
-      const accounts = await provider.send("eth_accounts", []);
+      try {
+        const accounts = await provider.send("eth_accounts", []);
 
-      if (accounts.length === 0) return;
+        if (accounts.length === 0) return;
 
-      const walletSigner = await provider.getSigner();
-      await initializeUser(walletSigner);
-      // Deliberately NOT calling connectWallet()/sign flow here.
-      // If there's no valid token, useAuthGuard will catch it on the
-      // next auth-required action and prompt the user then —
-      // avoids signing on every page load.
+        const walletSigner = await provider.getSigner();
+
+        const addr = await initializeUser(walletSigner);
+
+        setAuthenticated(hasValidTokenFor(addr));
+
+        // Clear any stale error from a previous connection attempt.
+        setWalletError(null);
+      } catch (err) {
+        console.error("Failed to restore wallet:", err);
+
+        setWalletError("Failed to restore wallet connection.");
+      }
     }
 
     restoreWallet();
   }, [provider]);
 
+  // Listen for MetaMask account changes.
   useEffect(() => {
     if (!window.ethereum) return;
 
     function handleAccountsChanged() {
       if (suppressNextAccountsChanged.current) {
-        // We caused this change ourselves via switchAccount() —
-        // let switchAccount's own connectWallet() call finish instead of reloading
+        // We caused this change ourselves through switchAccount().
         return;
       }
+
       disconnectWallet();
+
       window.location.reload();
     }
 
     window.ethereum.on("accountsChanged", handleAccountsChanged);
 
     return () => {
-      window.ethereum.removeListener("accountsChanged", handleAccountsChanged);
+      window.ethereum.removeListener(
+        "accountsChanged",
+        handleAccountsChanged
+      );
     };
   }, []);
+
+  // Automatically clear temporary wallet errors after 5 seconds.
+  useEffect(() => {
+    if (!walletError) return;
+
+    const timer = setTimeout(() => {
+      setWalletError(null);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [walletError]);
 
   return (
     <WalletContext.Provider
@@ -175,6 +251,7 @@ export function WalletProvider({ children }) {
         switchAccount,
         disconnectWallet,
         authenticated,
+        walletError,
       }}
     >
       {children}

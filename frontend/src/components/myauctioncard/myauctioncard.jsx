@@ -57,62 +57,74 @@ export default function MyAuctionCard({ auction }) {
   const activeDeadline =
     status === "Commit Phase" ? auction.commitDeadline : auction.revealDeadline;
 
-  return (
-    <Link to={`/auction/${auction.auctionAddress}`} className="my-auction-card">
-      <img
-        src={auction.images?.[0]}
-        alt={auction.title}
-        className="my-auction-image"
-      />
+return (
+  <Link to={`/auction/${auction.auctionAddress}`} className="my-auction-card">
+    <img
+      src={auction.images?.[0]}
+      alt={auction.title}
+      className="my-auction-image"
+    />
 
-      <div className="my-auction-content">
-        <div className="my-auction-header">
-          <div>
-            <h2>{auction.title}</h2>
-            <p>{auction.category.toUpperCase()}</p>
-          </div>
-
-          <span className={`status ${className}`}>
-            {dot} {status}
-          </span>
+    <div className="my-auction-content">
+      <div className="my-auction-header">
+        <div>
+          <h2>{auction.title}</h2>
+          <p>{auction.category.toUpperCase()}</p>
         </div>
 
-        <div className="auction-stats-grid">
-          <div className="stat-col">
-            <span>Reserve</span>
-            <strong>{ethers.formatEther(auction.reservePrice)} ETH</strong>
-          </div>
-
-          <div className="stat-col">
-            <span>{auction.finalized ? "Highest Bid" : "Ends in"}</span>
-            <strong>
-              {auction.finalized &&
-              auction.highestBidder === ethers.ZeroAddress ? (
-                <>
-                  <strong>None</strong>
-                </>
-              ) : (
-                <>
-                  <strong>{ethers.formatEther(auction.highestBid)} ETH</strong>
-                </>
-              )}
-            </strong>
-          </div>
-
-          <div className="stat-col">
-            <span>Result</span>
-            <strong>
-              {auction.finalized
-                ? auction.highestBidder !== ethers.ZeroAddress
-                  ? "✅ Sold"
-                  : "❌ Unsold"
-                : "⏳ Pending"}
-            </strong>
-          </div>
-        </div>
-
-        <div className="view-link">View Details →</div>
+        <span className={`status ${className}`}>
+          {dot} {status}
+        </span>
       </div>
-    </Link>
-  );
+
+      <div className="auction-stats-grid">
+        <div className="stat-col">
+          <span>Reserve</span>
+          <strong>{ethers.formatEther(auction.reservePrice)} ETH</strong>
+        </div>
+
+        <div className="stat-col">
+          <span>
+            {auction.finalized
+              ? "Highest Bid"
+              : now < activeDeadline
+              ? "Ends in"
+              : "Ended"}
+          </span>
+          <strong>
+            {auction.finalized ? (
+              auction.highestBidder === ethers.ZeroAddress ? (
+                "None"
+              ) : (
+                `${ethers.formatEther(auction.highestBid)} ETH`
+              )
+            ) : (
+              formatCountdown(activeDeadline)
+            )}
+          </strong>
+        </div>
+
+        <div className="stat-col">
+          <span>Result</span>
+          <strong>
+            {auction.finalized
+              ? auction.highestBidder !== ethers.ZeroAddress
+                ? "✅ Sold"
+                : "❌ Unsold"
+              : "⏳ Pending"}
+          </strong>
+        </div>
+
+        <div className="stat-col">
+          <span>Status</span>
+          <strong>
+            {dot} {status}
+          </strong>
+        </div>
+      </div>
+
+      <div className="view-link">View Details →</div>
+    </div>
+  </Link>
+);
 }

@@ -29,7 +29,7 @@ export default function MyAuctions() {
         }
 
         const auctions = await getMyAuctions();
-        console.log(account);
+        
 
         const auctionList = await Promise.all(
           auctions.map(async (auction) => {

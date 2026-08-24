@@ -17,3 +17,9 @@
   color: #e4e4e7;
   min-width: 0;
 }
+css
+.layout-body {
+  display: flex;
+  flex: 1;
+  align-items: flex-start; /* stops sidebar stretching to content's height */
+}
