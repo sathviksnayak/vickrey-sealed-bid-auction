@@ -1,9 +1,19 @@
 import { useState } from "react";
-import { FileText, Eye, Download, X } from "lucide-react";
+import { FileText, Eye, X } from "lucide-react";
 import "./DocumentCard.css";
 
 export default function DocumentCard({ document }) {
   const [previewOpen, setPreviewOpen] = useState(false);
+
+  const isLocalUrl = /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(
+    document.url || ""
+  );
+
+  const previewSrc = isLocalUrl
+    ? document.url
+    : `https://docs.google.com/viewer?url=${encodeURIComponent(
+        document.url
+      )}&embedded=true`;
 
   return (
     <>
@@ -24,17 +34,6 @@ export default function DocumentCard({ document }) {
             <Eye size={14} />
             View
           </button>
-
-          <a
-            href={document.url}
-            download
-            target="_blank"
-            rel="noreferrer"
-            className="doc-action-btn"
-          >
-            <Download size={14} />
-            Download
-          </a>
         </div>
       </div>
 
@@ -62,8 +61,15 @@ export default function DocumentCard({ document }) {
               </button>
             </div>
 
+            {isLocalUrl && (
+              <div className="doc-preview-warning">
+                Previewing a local file. Inline preview may not render for
+                localhost URLs.
+              </div>
+            )}
+
             <iframe
-              src={document.url}
+              src={previewSrc}
               title={document.name}
               className="doc-preview-frame"
             />

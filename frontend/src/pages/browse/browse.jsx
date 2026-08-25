@@ -145,8 +145,7 @@ export default function Browse() {
       {!hasMetaMask && (
         <div className="metamask-banner">
           <span>
-            MetaMask not detected. You can browse auctions, but you'll need
-            it to bid.
+MetaMask not detected. You’ll need it to access the auction platform.
           </span>
 
           <a
