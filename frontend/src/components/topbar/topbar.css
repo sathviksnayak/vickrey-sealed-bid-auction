@@ -1,38 +1,64 @@
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 20; /* above sidebar's z-index: 10 */
+
+  z-index: 20;
+
   display: flex;
   align-items: center;
   justify-content: space-between;
+
   height: 72px;
-  background-color: #202023;
+
   padding: 0 24px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06); /* soft border */
+
+  background-color: #202023;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .topbar-left {
   display: flex;
   align-items: center;
   gap: 12px;
+
+  min-width: 0;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  flex-shrink: 0;
 }
 
 .logo {
   width: 62px;
   height: 62px;
+
   transform: scale(1.3);
   transform-origin: center;
+
+  flex-shrink: 0;
 }
 
 .sidebar-toggle {
-  background: none;
-  border: none;
-  color: #a1a1aa;
-  cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center;
+
+  background: none;
+  border: none;
+
+  color: #a1a1aa;
+
   padding: 6px;
+
   border-radius: 6px;
+
+  cursor: pointer;
+
   transition: background-color 0.15s ease;
 }
 
@@ -40,26 +66,51 @@
   background-color: rgba(255, 255, 255, 0.06);
 }
 
+.sidebar-toggle:focus-visible {
+  outline: 2px solid #4f8ef7;
+  outline-offset: 2px;
+}
+
 .topbar-logo {
   color: #ff8a00;
+
   font-size: 1.1rem;
   font-weight: 600;
+
   text-decoration: none;
+
+  white-space: nowrap;
 }
+
+
+/* =========================
+   WALLET BUTTON
+   ========================= */
 
 .wallet-button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
-  background-color: #1047a4;
-  color: #ffffff;
-  border: none;
+
+  height: 42px;
+
   padding: 10px 18px;
-  border-radius: 10px; /* rounder */
-  height: 42px; /* taller */
-  font-weight: 500;
+
+  background-color: #1047a4;
+
+  color: #ffffff;
+
+  border: none;
+  border-radius: 10px;
+
   font-size: 0.9rem;
+  font-weight: 500;
+
   cursor: pointer;
+
+  white-space: nowrap;
+
   transition: background-color 0.15s ease;
 }
 
@@ -67,56 +118,96 @@
   background-color: #023c9a;
 }
 
+.wallet-button:focus-visible {
+  outline: 2px solid #93b8ff;
+  outline-offset: 2px;
+}
+
+
+/* =========================
+   WALLET DROPDOWN
+   ========================= */
+
 .wallet-menu-wrapper {
   position: relative;
 }
 
 .wallet-dropdown {
   position: absolute;
+
   top: calc(100% + 10px);
   right: 0;
+
   width: 220px;
+
+  padding: 8px;
+
   background-color: #232326;
+
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
-  padding: 8px;
+
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+
   z-index: 100;
 }
 
 .wallet-dropdown-label {
-  font-size: 0.72rem;
-  color: #71717a;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
   padding: 6px 10px 2px;
+
+  color: #71717a;
+
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 .wallet-dropdown-address {
-  font-size: 0.85rem;
-  color: #f4f4f5;
-  font-weight: 600;
   padding: 2px 10px 8px;
+
+  color: #f4f4f5;
+
+  font-size: 0.85rem;
+  font-weight: 600;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .wallet-dropdown-item {
   display: flex;
   align-items: center;
+
   gap: 10px;
+
   width: 100%;
-  background: none;
-  border: none;
-  color: #d4d4d8;
-  font-size: 0.85rem;
+
   padding: 9px 10px;
+
+  background: none;
+
+  border: none;
   border-radius: 8px;
+
+  color: #d4d4d8;
+
+  font-size: 0.85rem;
+
   cursor: pointer;
+
   text-align: left;
+
   transition: background-color 0.15s ease;
 }
 
 .wallet-dropdown-item:hover {
   background-color: rgba(255, 255, 255, 0.06);
+}
+
+.wallet-dropdown-item:focus-visible {
+  outline: 2px solid #4f8ef7;
+  outline-offset: -2px;
 }
 
 .wallet-dropdown-item.danger {
@@ -129,34 +220,167 @@
 
 .wallet-dropdown-divider {
   height: 1px;
-  background-color: rgba(255, 255, 255, 0.08);
+
   margin: 6px 4px;
+
+  background-color: rgba(255, 255, 255, 0.08);
 }
-.topbar-right {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
+
+
+/* =========================
+   WALLET ERROR
+   ========================= */
 
 .wallet-error-banner {
   display: flex;
   align-items: center;
+
   gap: 8px;
-  background-color: rgba(248, 113, 113, 0.1);
-  border: 1px solid rgba(248, 113, 113, 0.25);
-  color: #f87171;
-  font-size: 0.82rem;
+
+  max-width: 300px;
+
   padding: 8px 14px;
+
+  background-color: rgba(248, 113, 113, 0.1);
+
+  border: 1px solid rgba(248, 113, 113, 0.25);
   border-radius: 10px;
+
+  color: #f87171;
+
+  font-size: 0.82rem;
+
+  overflow: hidden;
 }
 
 .wallet-error-banner a {
+  flex-shrink: 0;
+
   color: #f87171;
+
   font-weight: 600;
+
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
 .wallet-error-banner a:hover {
   color: #fca5a5;
+}
+
+
+/* =========================
+   TABLET
+   ========================= */
+
+@media (max-width: 768px) {
+  .layout-content {
+    padding: 20px 16px;
+  }
+
+  .topbar {
+    height: 60px;
+    padding: 0 16px;
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+
+    transform: scale(1);
+  }
+
+  .topbar-logo {
+    font-size: 0.95rem;
+  }
+
+  .topbar-right {
+    gap: 8px;
+  }
+
+  .wallet-button {
+    height: 36px;
+
+    padding: 8px 12px;
+
+    font-size: 0.8rem;
+  }
+
+  .wallet-error-banner {
+    max-width: 160px;
+
+    padding: 6px 10px;
+
+    gap: 6px;
+
+    font-size: 0.72rem;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 480px) {
+  .topbar {
+    padding: 0 12px;
+  }
+
+  .topbar-left {
+    gap: 8px;
+  }
+
+  .topbar-logo {
+    font-size: 0.9rem;
+  }
+
+  .topbar-right {
+    gap: 6px;
+  }
+
+  .wallet-button {
+    padding: 8px 10px;
+  }
+
+  /*
+    Keep only the icon/text that fits naturally.
+    The error banner should not force the header
+    onto a second row.
+  */
+  .wallet-error-banner {
+    max-width: 120px;
+
+    padding: 5px 8px;
+
+    font-size: 0.68rem;
+  }
+}
+
+
+/* =========================
+   VERY SMALL PHONES
+   ========================= */
+
+@media (max-width: 380px) {
+  .topbar {
+    padding: 0 10px;
+  }
+
+  .topbar-logo {
+    display: none;
+  }
+
+  .wallet-error-banner {
+    max-width: 90px;
+  }
+
+  .wallet-button {
+    padding: 8px;
+  }
 }

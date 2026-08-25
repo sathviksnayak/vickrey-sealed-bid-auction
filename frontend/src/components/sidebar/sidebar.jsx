@@ -10,24 +10,28 @@ const links = [
   { to: "/profile", label: "Profile", icon: User },
 ];
 
-export default function Sidebar({ open }) {
+export default function Sidebar({ open, onClose }) {
   return (
-    <aside className={`sidebar ${open ? "" : "sidebar-collapsed"}`}>
-      <nav className="sidebar-links">
-        {links.map(({ to, label, icon: Icon, end }) => (
-          <NavLink
-            key={to}
-            to={to}
-            end={end}
-            className={({ isActive }) =>
-              `sidebar-link ${isActive ? "active" : ""}`
-            }
-          >
-            <Icon size={18} className="sidebar-icon" />
-            {open && <span>{label}</span>}
-          </NavLink>
-        ))}
-      </nav>
-    </aside>
+    <>
+      {open && <div className="sidebar-overlay" onClick={onClose} />}
+      <aside className={`sidebar ${open ? "" : "sidebar-collapsed"}`}>
+        <nav className="sidebar-links">
+          {links.map(({ to, label, icon: Icon, end }) => (
+            <NavLink
+              key={to}
+              to={to}
+              end={end}
+              onClick={onClose}
+              className={({ isActive }) =>
+                `sidebar-link ${isActive ? "active" : ""}`
+              }
+            >
+              <Icon size={18} className="sidebar-icon" />
+              {open && <span>{label}</span>}
+            </NavLink>
+          ))}
+        </nav>
+      </aside>
+    </>
   );
 }

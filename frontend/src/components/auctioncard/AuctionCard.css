@@ -124,3 +124,13 @@
 .auction-card:hover .view-details {
   transform: translateX(3px);
 }
+@media (max-width: 600px) {
+  .auction-image,
+  .auction-image-placeholder {
+    height: 190px; /* was 230px — a bit tall relative to full-width mobile cards */
+  }
+
+  .auction-content {
+    padding: 16px; /* was 22px, a little tighter for small screens */
+  }
+}

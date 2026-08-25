@@ -1,67 +1,142 @@
-# Vickrey Sealed Bid Auction
+# Vickrey Sealed-Bid Auction
 
-A full-stack decentralized auction platform implementing the Vickrey (second-price sealed-bid) auction protocol.
+A full-stack decentralized auction platform implementing a **Vickrey (second-price sealed-bid) auction** using a commit-reveal mechanism.
 
-Built using Solidity, Hardhat, React, Node.js, Express, MongoDB, Ethers.js, and MetaMask.
+Built with **React, Node.js, Express, MongoDB, Solidity, Hardhat, Ethers.js, and MetaMask**.
+
+---
+
+## Live Demo
+
+**[BidForge](https://vickrey-sealed-bid-auction.vercel.app/)**
+
+> MetaMask is required for blockchain interactions such as bidding, revealing, auction finalization, and withdrawals. Auctions can be browsed without connecting a wallet.
 
 ---
 
 ## Overview
 
-Traditional online auctions expose bids immediately, allowing bidders to adjust their offers strategically. This creates incentives for bid sniping, collusion, and inefficient price discovery.
+Traditional online auctions expose bids during the auction, allowing bidders to react to competing offers. This can encourage bid sniping and strategic behavior based on visible competing bids.
 
-This application implements a sealed-bid Vickrey auction where bidders first submit cryptographic commitments of their bids, reveal them later, and the highest bidder wins while paying the second-highest valid bid. This mechanism removes the incentive to misrepresent a bid, since a bidder's dominant strategy is to bid their true valuation — they can never do better by bidding higher or lower.
+This project implements a **sealed-bid Vickrey auction** where bidders:
 
-The platform combines on-chain auction logic (for trust and settlement guarantees) with an off-chain backend (for metadata, media, and a usable web experience), giving users the security of a smart contract without sacrificing UX.
+1. Commit a cryptographic hash of their bid and secret.
+2. Wait until the commit phase ends.
+3. Reveal the original bid and secret.
+4. The highest valid bidder wins.
+5. The winner pays the **second-highest valid bid**.
+
+Under the standard assumptions of a Vickrey auction, truthful bidding is a dominant strategy. The commit-reveal mechanism additionally keeps bid values hidden during the bidding phase, preventing participants from seeing and reacting to competing bids before the reveal phase.
+
+The platform combines **on-chain auction logic** with an **off-chain backend**:
+
+- Smart contracts handle bidding, revealing, settlement, deposits, and refunds.
+- The backend stores auction metadata, user profiles, bid metadata, images, and documents.
+- The frontend provides the interface for interacting with both systems.
 
 ---
 
 ## Architecture
 
-```
-                     React Frontend
-                            │
-                    Ethers.js + JWT
-                     /             \
-          Smart Contracts      Express API
-             Solidity            Node.js
-             Hardhat             MongoDB
+```text
+                         React Frontend
+                              │
+                     Ethers.js + JWT
+                       /            \
+                      /              \
+             Blockchain              Express API
+                 │                       │
+             Solidity                 Node.js
+             Hardhat                  MongoDB
+                 │
+              Ethereum
 ```
 
-The frontend talks to the blockchain directly via Ethers.js for anything that must be trustless (bidding, revealing, settlement), and to the Express API for anything that doesn't need to live on-chain (auction listings, images, documents, user profiles). JWT-based sessions, issued after a wallet-signature challenge, gate access to the backend.
+The frontend communicates directly with the blockchain through Ethers.js for operations that require trustless execution, including bidding, revealing, finalization, and withdrawals.
+
+The Express API handles off-chain application data such as auction listings, images, documents, bid metadata, and user profiles.
+
+Authentication uses a **wallet-signature challenge**. The backend verifies ownership of the wallet and issues a JWT for subsequent authenticated API requests.
+
+---
+
+## Auction Lifecycle
+
+```text
+                 Auction Created
+                        │
+                        ▼
+                ┌───────────────┐
+                │  Commit Phase │
+                │               │
+                │ hash(bid,salt)│
+                │    + deposit  │
+                └───────┬───────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │  Reveal Phase │
+                │               │
+                │  bid + salt   │
+                └───────┬───────┘
+                        │
+                        ▼
+                ┌───────────────┐
+                │    Finalize   │
+                └───────┬───────┘
+                        │
+                        ▼
+             Highest valid bidder wins
+                        │
+                        ▼
+            Winner pays second-highest
+                   valid bid
+                        │
+                        ▼
+              Losing bidders withdraw
+                refundable funds
+```
 
 ---
 
 ## Features
 
-**Smart Contract**
+### Smart Contract
 
-- Commit-Reveal bidding
-- Second-price auction logic
+- Commit-reveal bidding
+- Vickrey second-price auction logic
 - Reserve price validation
+- Bid deposits
 - Lazy refund settlement
 - Withdrawal pattern
 - Custom Solidity errors
-- Events
+- Contract events
+- Auction finalization
+- Bid validation during reveal
 
-**Frontend**
+### Frontend
 
 - Browse auctions
+- Auction filtering and sorting
 - Auction details
 - Auction creation
 - My Auctions
 - My Bids
-- Profile
-- Wallet management
-- Responsive layout
+- Profile management
+- Wallet connection and switching
+- Wallet authentication
+- Fully responsive layout
 - Transaction progress modal
 - Authentication modal
+- Custom blockchain error handling
 - Image gallery
-- Document viewer
+- Document preview and download
+- Auction phase tracking
 
-**Backend**
+### Backend
 
-- JWT Authentication
+- JWT authentication
+- Wallet-signature authentication
 - Nonce generation
 - Wallet verification
 - User management
@@ -70,40 +145,56 @@ The frontend talks to the blockchain directly via Ethers.js for anything that mu
 - Image uploads
 - Document uploads
 
+### Testing
+
+- **30 automated test cases passing**
+- Unit and integration tests covering the auction lifecycle and contract behavior
+
 ---
 
 ## Tech Stack
 
-| Layer          | Technology                                 |
-| -------------- | ------------------------------------------ |
-| Frontend       | React, React Router, Context API, CSS      |
-| Blockchain     | Solidity, Hardhat, OpenZeppelin, Ethers.js |
-| Backend        | Node.js, Express.js                        |
-| Database       | MongoDB                                    |
-| Authentication | MetaMask, JWT                              |
-| Storage        | Multer                                     |
+| Layer | Technology |
+| --- | --- |
+| Frontend | React, React Router, Context API, CSS |
+| Blockchain | Solidity, Hardhat, Ethers.js, Ethereum |
+| Backend | Node.js, Express.js |
+| Database | MongoDB |
+| Authentication | MetaMask, JWT |
+| File Uploads | Multer |
+| Testing | Hardhat, Mocha, Chai |
 
 ---
 
 ## Screenshots
 
-**Browse Auctions**
-<!-- [screenshot] -->
+### Browse Auctions
 
-**Auction Details**
-<!-- [screenshot] -->
+![Browse Auctions](./screenshots/browse.png)
 
-**Create Auction**
-<!-- [screenshot] -->
+### Auction Details
 
-**Profile**
-<!-- [screenshot] -->
+![Auction Details](./screenshots/auction-details.png)
 
-**My Auctions**
-<!-- [screenshot] -->
+### Create Auction
 
-**Transaction Flow**
-<!-- [screenshot] -->
+![Create Auction](./screenshots/create-auction.png)
+
+### My Auctions
+
+![My Auctions](./screenshots/my-auctions.png)
+
+### My Bids
+
+![My Bids](./screenshots/my-bids.png)
+
+### Profile
+
+![Profile](./screenshots/profile.png)
+
+### Transaction Flow
+
+![Transaction Flow](./screenshots/transaction-flow.png)
 
 ---
 
@@ -113,75 +204,204 @@ The frontend talks to the blockchain directly via Ethers.js for anything that mu
 
 ```bash
 git clone https://github.com/sathviksnayak/vickrey-sealed-bid-auction.git
-cd vickrey-sealed-bid-auction.git
 
+cd vickrey-sealed-bid-auction
 ```
 
 ### Backend
 
 ```bash
 cd backend
+
 npm install
+
 npm run dev
+```
+
+Create a `.env` file inside `backend/`:
+
+```env
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
+PORT=5000
 ```
 
 ### Frontend
 
 ```bash
 cd frontend
+
 npm install
+
 npm run dev
+```
+
+Create a `.env` file inside `frontend/`:
+
+```env
+VITE_API_URL=http://localhost:5000
+VITE_RPC_URL=your_rpc_url
 ```
 
 ### Smart Contracts
 
 ```bash
-cd contracts
+cd blockchain
+
 npm install
+
 npx hardhat compile
+```
+
+To start a local Hardhat network:
+
+```bash
 npx hardhat node
+```
+
+To deploy to Sepolia:
+
+```bash
 npx hardhat run scripts/deploy.js --network sepolia
 ```
 
-### Environment Variables
+Make sure the deployed contract addresses and ABI used by the frontend correspond to the current deployment.
 
-Create a `.env` file in `backend/` with:
+---
 
-```
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_jwt_secret
-PORT=5000
-```
+## Testing
 
-Create a `.env` file in `frontend/` with:
+Run the smart contract test suite from the `blockchain/` directory:
 
+```bash
+npx hardhat test
 ```
 
-REACT_APP_API_URL=http://localhost:5000
-```
+The project currently has:
+
+**30 passing test cases.**
+
+The tests cover the major auction lifecycle and contract behaviors, including commit, reveal, validation, settlement, and refund-related functionality.
 
 ---
 
 ## Design Decisions
 
-- **Commit-Reveal protocol** prevents bid leakage — bidders submit a hash of their bid plus a secret salt during the commit phase, and only disclose the actual value in the reveal phase, so no participant can see or react to another's bid mid-auction.
-- **Lazy refund settlement** avoids expensive batch payouts. Instead of the contract looping through every losing bidder to refund them (which scales poorly and risks hitting gas limits), losing bidders withdraw their own funds on demand.
-- **Withdrawal pattern over push payments** protects against reentrancy and failed-transfer griefing, following the standard Solidity security practice of letting users pull funds rather than the contract pushing them.
-- **JWT authentication is layered on top of wallet signatures** for backend authorization. MetaMask signatures prove wallet ownership without ever exposing a private key, while a short-lived JWT keeps subsequent API calls lightweight and stateless.
-- **Auction metadata is stored off-chain while auction logic remains on-chain.** Images, descriptions, and documents are expensive and impractical to store on a blockchain, so only what needs trustless guarantees (bid commitments, reveals, and settlement) lives in the smart contract; everything else lives in MongoDB.
+### Commit-Reveal Protocol
+
+Bidders do not submit their actual bid during the commit phase.
+
+Instead, they submit a cryptographic commitment generated from their bid and a secret salt:
+
+```text
+hash(bid, salt)
+```
+
+During the reveal phase, the bidder provides the original bid and salt. The smart contract hashes those values again and verifies that the result matches the original commitment.
+
+This keeps bid values hidden while commitments are being submitted.
+
+---
+
+### Vickrey Second-Price Auction
+
+The highest valid revealed bid determines the winner.
+
+However, the winner pays the **second-highest valid bid** rather than their own bid.
+
+Under the standard assumptions of a Vickrey auction, this makes truthful bidding a dominant strategy because bidding above or below one's true valuation does not provide an advantage over bidding truthfully.
+
+---
+
+### Lazy Refund Settlement
+
+The contract does not loop through every losing bidder and send refunds during finalization.
+
+Instead, eligible bidders withdraw their refundable funds themselves.
+
+This avoids expensive batch payouts and prevents the cost of finalization from growing with the number of bidders.
+
+---
+
+### Withdrawal Pattern
+
+Funds are withdrawn by users rather than being pushed to multiple addresses automatically.
+
+This separates auction finalization from individual fund transfers and reduces risks associated with failed external calls and reentrancy.
+
+---
+
+### Wallet-Based Authentication
+
+The backend uses wallet signatures to verify wallet ownership.
+
+The authentication flow is:
+
+```text
+Wallet
+   │
+   │ Request nonce
+   ▼
+Backend
+   │
+   │ Return nonce
+   ▼
+Wallet
+   │
+   │ Sign nonce
+   ▼
+Backend
+   │
+   │ Verify signature
+   ▼
+JWT issued
+```
+
+The user's private key is never sent to the backend.
+
+---
+
+### On-Chain vs Off-Chain Data
+
+Only information requiring blockchain guarantees is stored on-chain.
+
+**On-chain:**
+
+- Bid commitments
+- Revealed bids
+- Deposits
+- Auction state
+- Highest bidder
+- Highest bid
+- Second-highest bid
+- Auction finalization
+- Refundable funds
+
+**Off-chain:**
+
+- Auction title
+- Description
+- Images
+- Documents
+- User profiles
+- Bid metadata
+
+Storing large media files and application metadata on-chain would be unnecessarily expensive and impractical. The blockchain therefore handles trust-critical auction logic while MongoDB handles application-level metadata.
 
 ---
 
 ## Future Improvements
 
-- Decode Solidity custom errors into human-readable frontend messages
-- Event indexing for faster auction history queries
-- Advanced filtering and search on the auction browse page
-- Responsive design improvements for smaller screens
-- Better wallet synchronization across tabs and network changes
+- Event indexing for faster auction history and activity queries
+- Advanced auction search and filtering
+- Improved wallet synchronization across tabs and network changes
+- Additional auction analytics
+- More comprehensive transaction history
 
 ---
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for details.
+This project is licensed under the MIT License.
+
+See the [LICENSE](./LICENSE) file for details.

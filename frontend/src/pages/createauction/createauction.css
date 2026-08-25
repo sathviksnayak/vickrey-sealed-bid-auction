@@ -224,3 +224,35 @@
 .remove-btn-inline:hover {
   color: #f87171;
 }
+@media (max-width: 600px) {
+  .create-auction-page {
+    padding: 16px 0 40px;
+  }
+
+  .create-auction-card {
+    padding: 24px 18px;
+    gap: 24px;
+    border-radius: 12px;
+  }
+
+  .create-auction-title {
+    font-size: 1.25rem;
+  }
+
+  .two-col-grid {
+    grid-template-columns: 1fr; /* stack Reserve/Penalty and Commit/Reveal pairs */
+    gap: 14px;
+  }
+
+  .field-group input[type="number"] {
+    /* duration fields pair a number input with a unit <select> side by side in the JSX,
+       even though they're not wrapped in .two-col-grid — give them room to not collide */
+    margin-bottom: 6px;
+  }
+
+  .image-preview,
+  .image-add-tile {
+    width: 72px;
+    height: 72px;
+  }
+}

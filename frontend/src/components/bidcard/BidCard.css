@@ -142,3 +142,30 @@
 .bid-card:hover .view-link {
   transform: translateX(3px);
 }
+@media (max-width: 600px) {
+  .bid-card {
+    flex-direction: column;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .bid-card-image,
+  .bid-card-image-placeholder {
+    width: 100%;
+    height: 180px;
+  }
+
+  .bid-card-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .bid-stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* 3 columns → 2 per row */
+    gap: 14px 16px;
+  }
+
+  .view-link {
+    align-self: flex-start;
+  }
+}

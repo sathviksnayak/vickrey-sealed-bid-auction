@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ethers } from "ethers";
 import { ArrowLeft } from "lucide-react";
+
 import { useAuthGuard } from "../../hooks/useAuthGuard";
 import ABI from "../../abi/VickreyAuction.json";
 import { hashBid } from "../../utils/hashBid";
@@ -19,10 +20,25 @@ import DocumentCard from "../../components/documentcard/DocumentCard";
 import "./auction.css";
 
 const statusConfig = {
-  "Commit Phase": { dot: "🟢", className: "commit-phase" },
-  "Reveal Phase": { dot: "🟠", className: "reveal-phase" },
-  Finalized: { dot: "⚫", className: "finalized" },
-  "Awaiting Finalization": { dot: "🔵", className: "awaiting-finalization" },
+  "Commit Phase": {
+    dot: "🟢",
+    className: "commit-phase",
+  },
+
+  "Reveal Phase": {
+    dot: "🟠",
+    className: "reveal-phase",
+  },
+
+  Finalized: {
+    dot: "⚫",
+    className: "finalized",
+  },
+
+  "Awaiting Finalization": {
+    dot: "🔵",
+    className: "awaiting-finalization",
+  },
 };
 
 export default function Auction() {
@@ -31,49 +47,64 @@ export default function Auction() {
   const { account } = useWallet();
 
   const [auction, setAuction] = useState(null);
+
   const [bidAmount, setBidAmount] = useState("");
   const [salt, setSalt] = useState("");
 
   const [hasWithdrawn, setHasWithdrawn] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const tx = useTransactionModal();
+
   const [modalMeta, setModalMeta] = useState({
     title: "",
     steps: [],
     successMessage: "",
   });
 
-async function loadAuction() {
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
+  // ---------- Load Auction ----------
 
-  const contract = new ethers.Contract(address, ABI, signer);
+  async function loadAuction() {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    const signer = await provider.getSigner();
 
-  const [metadata, chainData] = await Promise.all([
-    getAuction(address),
-    getAuctionChainData(address, contract.runner),
-  ]);
+    const contract = new ethers.Contract(address, ABI, signer);
 
-  setAuction({
-    ...metadata,
-    ...chainData,
-    status: getStatus(
-      chainData.commitDeadline,
-      chainData.revealDeadline,
-      chainData.finalized
-    ),
-  });
-}
+    const [metadata, chainData] = await Promise.all([
+      getAuction(address),
+      getAuctionChainData(address, contract.runner),
+    ]);
 
-useEffect(() => {
-  loadAuction();
-}, [address, account]);
+    setAuction({
+      ...metadata,
+      ...chainData,
+      status: getStatus(
+        chainData.commitDeadline,
+        chainData.revealDeadline,
+        chainData.finalized
+      ),
+    });
+  }
+
+  useEffect(() => {
+    loadAuction();
+  }, [address, account]);
+
+  // ---------- Auction Status ----------
 
   function getStatus(commitDeadline, revealDeadline, finalized) {
     const now = Math.floor(Date.now() / 1000);
+
     if (finalized) return "Finalized";
-    if (now < commitDeadline) return "Commit Phase";
-    if (now < revealDeadline) return "Reveal Phase";
+
+    if (now < commitDeadline) {
+      return "Commit Phase";
+    }
+
+    if (now < revealDeadline) {
+      return "Reveal Phase";
+    }
+
     return "Awaiting Finalization";
   }
 
@@ -83,6 +114,7 @@ useEffect(() => {
     const interval = setInterval(() => {
       setAuction((prev) => {
         if (!prev) return prev;
+
         return {
           ...prev,
           status: getStatus(
@@ -97,52 +129,109 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [auction?.commitDeadline, auction?.revealDeadline]);
 
+  // ---------- Validation ----------
+
+  function showValidationError(message) {
+    setModalMeta({
+      title: "Invalid Bid",
+      steps: [],
+      successMessage: "",
+    });
+
+    tx.fail(new Error(message));
+  }
+
+  function validateBidInputs() {
+    if (!bidAmount || !salt) {
+      showValidationError("Please enter both bid amount and secret.");
+      return false;
+    }
+
+    return true;
+  }
+
   // ---------- Commit ----------
+
   async function handleCommit() {
     if (isSubmitting) return;
 
-    if (!bidAmount || !salt) {
-      alert("Please enter both bid amount and secret.");
+    if (!validateBidInputs()) {
       return;
     }
 
-    const amount = ethers.parseEther(bidAmount);
+    let amount;
+
+    try {
+      amount = ethers.parseEther(bidAmount);
+    } catch {
+      showValidationError("Please enter a valid bid amount.");
+      return;
+    }
 
     if (amount < auction.reservePrice) {
-      alert("Bid must be at least the reserve price.");
+      showValidationError("Bid must be at least the reserve price.");
       return;
     }
+
     setIsSubmitting(true);
 
     setModalMeta({
       title: "Submitting Bid",
       steps: [
-        { key: "connecting", label: "Connecting Wallet" },
-        { key: "signature", label: "Waiting for Signature..." },
-        { key: "pending", label: "Confirming Transaction..." },
-        { key: "saving", label: "Recording Bid..." },
-        { key: "complete", label: "Complete" },
+        {
+          key: "connecting",
+          label: "Connecting Wallet",
+        },
+        {
+          key: "signature",
+          label: "Waiting for Signature...",
+        },
+        {
+          key: "pending",
+          label: "Confirming Transaction...",
+        },
+        {
+          key: "saving",
+          label: "Recording Bid...",
+        },
+        {
+          key: "complete",
+          label: "Complete",
+        },
       ],
       successMessage: "Bid Submitted Successfully",
     });
 
     try {
-      if (!(await auth.ensureAuthenticated())) return;
+      if (!(await auth.ensureAuthenticated())) {
+        return;
+      }
 
       tx.start("connecting");
+
       await new Promise((res) => setTimeout(res, 300));
+
       tx.goTo("signature");
+
       const provider = new ethers.BrowserProvider(window.ethereum);
-const signer = await provider.getSigner();
-       const Contract = new ethers.Contract(address, ABI, signer);
+      const signer = await provider.getSigner();
+
+      const contract = new ethers.Contract(address, ABI, signer);
+
       const bidHash = hashBid(amount, salt);
-      const txResult = await Contract.commitBid(bidHash, { value: amount });
+
+      const txResult = await contract.commitBid(bidHash, {
+        value: amount,
+      });
 
       tx.goTo("pending");
+
       await txResult.wait();
 
       tx.goTo("saving");
+
       const now = new Date();
+
       await createBid({
         auctionAddress: address,
         bidderWallet: account,
@@ -152,139 +241,7 @@ const signer = await provider.getSigner();
       });
 
       await loadAuction();
-      tx.succeed();
-    } catch (err) {
-   
-      tx.fail(err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
 
-  // ---------- Reveal ----------
-  async function handleReveal() {
-    if (isSubmitting) return;
-    if (!bidAmount || !salt) {
-      alert("Please enter both bid amount and secret.");
-      return;
-    }
-    setIsSubmitting(true);
-
-    setModalMeta({
-      title: "Revealing Bid",
-      steps: [
-        { key: "connecting", label: "Connecting Wallet" },
-        { key: "signature", label: "Waiting for Signature..." },
-        { key: "pending", label: "Confirming Reveal..." },
-        { key: "saving", label: "Updating Bid..." },
-        { key: "complete", label: "Complete" },
-      ],
-      successMessage: "Bid Revealed Successfully",
-    });
-
-    try {
-      if (!(await auth.ensureAuthenticated())) return;
-
-      tx.start("connecting");
-      await new Promise((res) => setTimeout(res, 300));
-      tx.goTo("signature");
-
-      const amount = ethers.parseEther(bidAmount);
-      const saltBytes = ethers.encodeBytes32String(salt);
-      const provider = new ethers.BrowserProvider(window.ethereum);
-const signer = await provider.getSigner();
-       const Contract = new ethers.Contract(address, ABI, signer);
-      const txResult = await Contract.revealBid(amount, saltBytes);
-
-      tx.goTo("pending");
-      await txResult.wait();
-
-      tx.goTo("saving");
-      await updateBid(address, {
-        bidderWallet: account,
-        revealed: true,
-        revealedAt: new Date(),
-      });
-
-      await loadAuction();
-      tx.succeed();
-    } catch (err) {
-      
-      tx.fail(err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  // ---------- Finalize ----------
-  async function handleFinalize() {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    setModalMeta({
-      title: "Finalizing Auction",
-      steps: [
-        { key: "connecting", label: "Connecting Wallet" },
-        { key: "signature", label: "Waiting for Signature..." },
-        { key: "pending", label: "Confirming Transaction..." },
-        { key: "complete", label: "Complete" },
-      ],
-      successMessage: "Auction Finalized Successfully",
-    });
-
-    try {
-      if (!(await auth.ensureAuthenticated())) return;
-
-      tx.start("connecting");
-      await new Promise((res) => setTimeout(res, 300));
-      tx.goTo("signature");
-      const provider = new ethers.BrowserProvider(window.ethereum);
-const signer = await provider.getSigner();
-       const Contract = new ethers.Contract(address, ABI, signer);
-      const txResult = await Contract.finalizeAuction();
-
-      tx.goTo("pending");
-      await txResult.wait();
-
-      await loadAuction();
-      tx.succeed();
-    } catch (err) {
-
-      tx.fail(err );
-    } finally {
-      setIsSubmitting(false);
-    }
-  }
-
-  // ---------- Withdraw ----------
-  async function handleWithdraw() {
-    if (isSubmitting) return;
-    setIsSubmitting(true);
-    setModalMeta({
-      title: "Withdrawing Funds",
-      steps: [
-        { key: "connecting", label: "Connecting Wallet" },
-        { key: "signature", label: "Waiting for Signature..." },
-        { key: "pending", label: "Confirming Transaction..." },
-        { key: "complete", label: "Complete" },
-      ],
-      successMessage: "Funds Withdrawn Successfully",
-    });
-
-    try {
-      if (!(await auth.ensureAuthenticated())) return;
-
-      tx.start("connecting");
-      await new Promise((res) => setTimeout(res, 300));
-      tx.goTo("signature");
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-       const Contract = new ethers.Contract(address, ABI, signer);
-      const txResult = await Contract.withdrawRefund();
-
-      tx.goTo("pending");
-      await txResult.wait();
-      setHasWithdrawn(true);
-      await loadAuction();
       tx.succeed();
     } catch (err) {
       console.error(err);
@@ -294,71 +251,327 @@ const signer = await provider.getSigner();
     }
   }
 
-  if (!auction) return <div className="auction-loading">Loading...</div>;
+  // ---------- Reveal ----------
+
+  async function handleReveal() {
+    if (isSubmitting) return;
+
+    if (!validateBidInputs()) {
+      return;
+    }
+
+    let amount;
+
+    try {
+      amount = ethers.parseEther(bidAmount);
+    } catch {
+      showValidationError("Please enter a valid bid amount.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    setModalMeta({
+      title: "Revealing Bid",
+      steps: [
+        {
+          key: "connecting",
+          label: "Connecting Wallet",
+        },
+        {
+          key: "signature",
+          label: "Waiting for Signature...",
+        },
+        {
+          key: "pending",
+          label: "Confirming Reveal...",
+        },
+        {
+          key: "saving",
+          label: "Updating Bid...",
+        },
+        {
+          key: "complete",
+          label: "Complete",
+        },
+      ],
+      successMessage: "Bid Revealed Successfully",
+    });
+
+    try {
+      if (!(await auth.ensureAuthenticated())) {
+        return;
+      }
+
+      tx.start("connecting");
+
+      await new Promise((res) => setTimeout(res, 300));
+
+      tx.goTo("signature");
+
+      const saltBytes = ethers.encodeBytes32String(salt);
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const contract = new ethers.Contract(address, ABI, signer);
+
+      const txResult = await contract.revealBid(amount, saltBytes);
+
+      tx.goTo("pending");
+
+      await txResult.wait();
+
+      tx.goTo("saving");
+
+      await updateBid(address, {
+        bidderWallet: account,
+        revealed: true,
+        revealedAt: new Date(),
+      });
+
+      await loadAuction();
+
+      tx.succeed();
+    } catch (err) {
+      console.error(err);
+      tx.fail(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  // ---------- Finalize ----------
+
+  async function handleFinalize() {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    setModalMeta({
+      title: "Finalizing Auction",
+      steps: [
+        {
+          key: "connecting",
+          label: "Connecting Wallet",
+        },
+        {
+          key: "signature",
+          label: "Waiting for Signature...",
+        },
+        {
+          key: "pending",
+          label: "Confirming Transaction...",
+        },
+        {
+          key: "complete",
+          label: "Complete",
+        },
+      ],
+      successMessage: "Auction Finalized Successfully",
+    });
+
+    try {
+      if (!(await auth.ensureAuthenticated())) {
+        return;
+      }
+
+      tx.start("connecting");
+
+      await new Promise((res) => setTimeout(res, 300));
+
+      tx.goTo("signature");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const contract = new ethers.Contract(address, ABI, signer);
+
+      const txResult = await contract.finalizeAuction();
+
+      tx.goTo("pending");
+
+      await txResult.wait();
+
+      await loadAuction();
+
+      tx.succeed();
+    } catch (err) {
+      console.error(err);
+      tx.fail(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  // ---------- Withdraw ----------
+
+  async function handleWithdraw() {
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
+    setModalMeta({
+      title: "Withdrawing Funds",
+      steps: [
+        {
+          key: "connecting",
+          label: "Connecting Wallet",
+        },
+        {
+          key: "signature",
+          label: "Waiting for Signature...",
+        },
+        {
+          key: "pending",
+          label: "Confirming Transaction...",
+        },
+        {
+          key: "complete",
+          label: "Complete",
+        },
+      ],
+      successMessage: "Funds Withdrawn Successfully",
+    });
+
+    try {
+      if (!(await auth.ensureAuthenticated())) {
+        return;
+      }
+
+      tx.start("connecting");
+
+      await new Promise((res) => setTimeout(res, 300));
+
+      tx.goTo("signature");
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+
+      const contract = new ethers.Contract(address, ABI, signer);
+
+      const txResult = await contract.withdrawRefund();
+
+      tx.goTo("pending");
+
+      await txResult.wait();
+
+      setHasWithdrawn(true);
+
+      await loadAuction();
+
+      tx.succeed();
+    } catch (err) {
+      console.error(err);
+      tx.fail(err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  // ---------- Loading ----------
+
+  if (!auction) {
+    return <div className="auction-loading">Loading...</div>;
+  }
+
+  // ---------- Derived State ----------
 
   const { dot, className } = statusConfig[auction.status];
+
   const isSeller =
-    account && auction.seller?.toLowerCase() === account.toLowerCase();
+    account &&
+    auction.seller?.toLowerCase() === account.toLowerCase();
 
   const isCommitPhase = auction.status === "Commit Phase";
   const isRevealPhase = auction.status === "Reveal Phase";
-  const isAwaitingFinalization = auction.status === "Awaiting Finalization";
+  const isAwaitingFinalization =
+    auction.status === "Awaiting Finalization";
   const isFinalized = auction.status === "Finalized";
+
+  // ---------- Actions ----------
 
   const actions = [
     {
       key: "commit",
+
       label: "Commit Bid",
+
       enabled: isCommitPhase && !isSeller,
+
       reason: isSeller
         ? "Sellers cannot bid on their own auction."
         : !isCommitPhase
           ? "Commit phase is not currently active."
           : null,
+
       onClick: handleCommit,
+
       needsInputs: true,
     },
+
     {
       key: "reveal",
+
       label: "Reveal Bid",
+
       enabled: isRevealPhase && !isSeller,
-      reason: isSeller?"Sellers cannot bid on their own auction.":!isRevealPhase
-        ? isCommitPhase
-          ? "Reveal phase has not started yet."
-          : "Reveal phase has ended."
-        : null,
+
+      reason: isSeller
+        ? "Sellers cannot bid on their own auction."
+        : !isRevealPhase
+          ? isCommitPhase
+            ? "Reveal phase has not started yet."
+            : "Reveal phase has ended."
+          : null,
+
       onClick: handleReveal,
+
       needsInputs: true,
     },
+
     {
       key: "finalize",
+
       label: "Finalize Auction",
+
       enabled: isAwaitingFinalization,
+
       reason: !isAwaitingFinalization
         ? isFinalized
           ? "This auction has already been finalized."
           : "Auction cannot be finalized yet."
         : null,
+
       onClick: handleFinalize,
     },
+
     {
       key: "withdraw",
+
       label: hasWithdrawn ? "Withdrawn" : "Withdraw Funds",
+
       enabled: isFinalized && !hasWithdrawn,
+
       reason: hasWithdrawn
         ? null
         : !isFinalized
           ? "Withdrawals become available once the auction is finalized."
           : null,
+
       onClick: handleWithdraw,
     },
   ];
 
+  // ---------- Render ----------
+
   return (
     <div className="auction-page">
+
       <div className="auction-topbar">
         <Link to="/" className="back-link">
-          <ArrowLeft size={16} /> Back
+          <ArrowLeft size={16} />
+          Back
         </Link>
 
         <span className={`status ${className}`}>
@@ -370,163 +583,271 @@ const signer = await provider.getSigner();
 
       <div className="auction-summary">
         <h1>{auction.title}</h1>
-        <p className="auction-category">{auction.category?.toUpperCase()}</p>
-        <p className="auction-description">{auction.description}</p>
+
+        <p className="auction-category">
+          {auction.category?.toUpperCase()}
+        </p>
+
+        <p className="auction-description">
+          {auction.description}
+        </p>
       </div>
 
+      {/* Auction Information */}
+
       <section className="auction-section">
+
         <h3 className="section-title">
           Auction Information
-          <Tooltip text="Core parameters set by the seller when this auction was created." />
+
+          <Tooltip
+            text="Core parameters set by the seller when this auction was created."
+          />
         </h3>
 
         <div className="info-grid">
+
           <div className="info-row">
             <span>
               Seller
-              <Tooltip text="Ethereum address that created this auction." />
+
+              <Tooltip
+                text="Ethereum address that created this auction."
+              />
             </span>
+
             <strong>
-              {auction.seller.slice(0, 6)}...{auction.seller.slice(-4)}
+              {auction.seller.slice(0, 6)}...
+              {auction.seller.slice(-4)}
             </strong>
           </div>
 
           <div className="info-row">
             <span>
               Reserve Price
-              <Tooltip text="Minimum acceptable selling price set by the seller. If no valid bid meets this amount, the auction ends without a winner." />
+
+              <Tooltip
+                text="Minimum acceptable selling price set by the seller. If no valid bid meets this amount, the auction ends without a winner."
+              />
             </span>
-            <strong>{ethers.formatEther(auction.reservePrice)} ETH</strong>
+
+            <strong>
+              {ethers.formatEther(auction.reservePrice)} ETH
+            </strong>
           </div>
 
           <div className="info-row">
             <span>
               Penalty
-              <Tooltip text="Percentage of your deposit forfeited if you fail to reveal your committed bid before the reveal deadline." />
+
+              <Tooltip
+                text="Percentage of your deposit forfeited if you fail to reveal your committed bid before the reveal deadline."
+              />
             </span>
+
             <strong>{auction.penalty}%</strong>
           </div>
 
           <div className="info-row">
             <span>
               Commit Ends
-              <Tooltip text="During this phase bidders submit only a cryptographic commitment. Bid values remain hidden." />
+
+              <Tooltip
+                text="During this phase bidders submit only a cryptographic commitment. Bid values remain hidden."
+              />
             </span>
+
             <strong>
-              {new Date(auction.commitDeadline * 1000).toLocaleString()}
+              {new Date(
+                auction.commitDeadline * 1000
+              ).toLocaleString()}
             </strong>
           </div>
 
           <div className="info-row">
             <span>
               Reveal Ends
-              <Tooltip text="Bidders reveal their original bid and secret. Invalid or missing reveals are ignored." />
+
+              <Tooltip
+                text="Bidders reveal their original bid and secret. Invalid or missing reveals are ignored."
+              />
             </span>
+
             <strong>
-              {new Date(auction.revealDeadline * 1000).toLocaleString()}
+              {new Date(
+                auction.revealDeadline * 1000
+              ).toLocaleString()}
             </strong>
           </div>
+
         </div>
       </section>
 
+      {/* Auction Results */}
+
       {auction.finalized && (
         <section className="auction-section">
+
           <h3 className="section-title">
             Auction Results
-            <Tooltip text="Current stage of the auction lifecycle." />
+
+            <Tooltip
+              text="Current stage of the auction lifecycle."
+            />
           </h3>
 
           <div className="info-grid">
+
             <div className="info-row">
               <span>
                 Highest Bid
-                <Tooltip text="Highest valid revealed bid." />
+
+                <Tooltip
+                  text="Highest valid revealed bid."
+                />
               </span>
+
               <strong>
-                {ethers.formatEther(BigInt(auction.highestBid))} ETH
+                {ethers.formatEther(
+                  BigInt(auction.highestBid)
+                )}{" "}
+                ETH
               </strong>
             </div>
 
             <div className="info-row">
               <span>
                 Second Highest Bid
-                <Tooltip text="Price paid by the winner under the Vickrey auction mechanism." />
+
+                <Tooltip
+                  text="Price paid by the winner under the Vickrey auction mechanism."
+                />
               </span>
+
               <strong>
-                {ethers.formatEther(BigInt(auction.secondHighestBid))} ETH
+                {ethers.formatEther(
+                  BigInt(auction.secondHighestBid)
+                )}{" "}
+                ETH
               </strong>
             </div>
 
             <div className="info-row">
               <span>Winner</span>
+
               <strong>
                 {auction.highestBidder === ethers.ZeroAddress
                   ? "No winner"
-                  : `${auction.highestBidder.slice(0, 6)}...${auction.highestBidder.slice(-4)}`}
+                  : `${auction.highestBidder.slice(
+                      0,
+                      6
+                    )}...${auction.highestBidder.slice(-4)}`}
               </strong>
             </div>
 
             <div className="info-row">
               <span>Status</span>
+
               <strong>Finalized</strong>
             </div>
+
           </div>
         </section>
       )}
 
+      {/* Documents */}
+
       {auction.documents?.length > 0 && (
         <section className="auction-section">
+
           <h3 className="section-title">
             Documents
-            <Tooltip text="Additional files supplied by the seller such as certificates, invoices, manuals or proof of authenticity." />
+
+            <Tooltip
+              text="Additional files supplied by the seller such as certificates, invoices, manuals or proof of authenticity."
+            />
           </h3>
 
           <div className="documents-list">
             {auction.documents.map((doc, i) => (
-              <DocumentCard key={i} document={doc} />
+              <DocumentCard
+                key={i}
+                document={doc}
+              />
             ))}
           </div>
+
         </section>
       )}
 
+      {/* Actions */}
+
       <section className="auction-section">
-        <h3 className="section-title">Actions</h3>
+
+        <h3 className="section-title">
+          Actions
+        </h3>
 
         {(isCommitPhase || isRevealPhase) && (
           <div className="bid-inputs">
+
             <input
               type="number"
               placeholder="Bid Amount (ETH)"
-              min={ethers.formatEther(auction.reservePrice)}
+              min={ethers.formatEther(
+                auction.reservePrice
+              )}
               value={bidAmount}
-              onChange={(e) => setBidAmount(e.target.value)}
+              onChange={(e) =>
+                setBidAmount(e.target.value)
+              }
             />
+
             <input
               type="text"
               placeholder="Secret"
               value={salt}
-              onChange={(e) => setSalt(e.target.value)}
+              onChange={(e) =>
+                setSalt(e.target.value)
+              }
             />
+
           </div>
         )}
 
         <div className="actions-list">
+
           {actions.map((action) => (
-            <div key={action.key} className="action-item">
+            <div
+              key={action.key}
+              className="action-item"
+            >
+
               <button
                 className="action-button"
-                disabled={ !action.enabled || isSubmitting}
+                disabled={
+                  !action.enabled ||
+                  isSubmitting
+                }
                 onClick={action.onClick}
               >
                 {action.label}
               </button>
-              {!action.enabled && action.reason && (
-                <span className="action-reason">{action.reason}</span>
-              )}
+
+              {!action.enabled &&
+                action.reason && (
+                  <span className="action-reason">
+                    {action.reason}
+                  </span>
+                )}
+
             </div>
           ))}
+
         </div>
       </section>
+
+      {/* Transaction Modal */}
 
       <TransactionModal
         status={tx.status}
@@ -537,7 +858,9 @@ const signer = await provider.getSigner();
         errorMessage={tx.error}
         onClose={tx.close}
       />
+
       {auth.modal}
+
     </div>
   );
 }

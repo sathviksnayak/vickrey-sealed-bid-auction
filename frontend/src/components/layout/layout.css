@@ -23,3 +23,10 @@ css
   flex: 1;
   align-items: flex-start; /* stops sidebar stretching to content's height */
 }
+@media (max-width: 768px) {
+  .layout-content { padding: 20px 16px; }
+  .topbar { padding: 0 16px; height: 60px; }
+  .logo { width: 40px; height: 40px; transform: scale(1); }
+  .topbar-logo { font-size: 0.95rem; }
+  .wallet-button { padding: 8px 12px; height: 36px; font-size: 0.8rem; }
+}

@@ -141,3 +141,29 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
 }
+@media (max-width: 600px) {
+  .my-auction-card {
+    flex-direction: column; /* stack image above content instead of side-by-side */
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .my-auction-image {
+    width: 100%;
+    height: 180px;
+  }
+
+  .my-auction-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .auction-stats-grid {
+    grid-template-columns: repeat(2, 1fr); /* 4 columns → 2x2 */
+    gap: 14px 16px;
+  }
+
+  .view-link {
+    align-self: flex-start;
+  }
+}

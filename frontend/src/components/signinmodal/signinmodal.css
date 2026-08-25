@@ -1,15 +1,12 @@
 .signin-overlay {
   position: fixed;
-
-  top: 64px; /* height of navbar */
-  left: 240px; /* width of sidebar */
-
-  width: calc(100vw - 240px);
-  height: calc(100vh - 64px);
+  inset: 0;
 
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+
+  padding: 20px;
 
   background: rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(3px);
@@ -18,7 +15,7 @@
 }
 
 .signin-card {
-  width: 420px;
+  width: min(420px, 100%);
 
   background: #2a2a2e;
 
@@ -31,16 +28,25 @@
 }
 
 .signin-card h2 {
-  color: #f4f4f5;
   margin: 0 0 14px;
+
+  color: #f4f4f5;
+
+  font-size: 1.25rem;
+  font-weight: 600;
+
   text-align: center;
 }
 
 .signin-text {
+  margin: 0 0 28px;
+
   color: #a1a1aa;
-  text-align: center;
+
+  font-size: 0.95rem;
   line-height: 1.6;
-  margin-bottom: 28px;
+
+  text-align: center;
 }
 
 .signin-actions {
@@ -49,35 +55,91 @@
   gap: 12px;
 }
 
-.signin-secondary {
+.signin-secondary,
+.signin-primary {
   padding: 10px 18px;
 
+  border-radius: 8px;
+
+  font-size: 0.9rem;
+  font-weight: 500;
+
+  cursor: pointer;
+
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.signin-secondary {
   background: transparent;
+
   color: #d4d4d8;
 
   border: 1px solid #52525b;
-  border-radius: 8px;
-
-  cursor: pointer;
 }
 
 .signin-secondary:hover {
   background: rgba(255, 255, 255, 0.05);
+  border-color: #71717a;
 }
 
 .signin-primary {
-  padding: 10px 22px;
+  padding-left: 22px;
+  padding-right: 22px;
 
   background: #3b82f6;
-  color: white;
 
-  border: none;
-  border-radius: 8px;
+  color: #ffffff;
+
+  border: 1px solid #3b82f6;
 
   font-weight: 600;
-  cursor: pointer;
 }
 
 .signin-primary:hover {
   background: #2563eb;
+  border-color: #2563eb;
+}
+
+.signin-secondary:focus-visible,
+.signin-primary:focus-visible {
+  outline: 2px solid #93b8ff;
+  outline-offset: 2px;
+}
+
+
+/* =========================
+   MOBILE
+   ========================= */
+
+@media (max-width: 480px) {
+  .signin-overlay {
+    padding: 16px;
+  }
+
+  .signin-card {
+    padding: 24px 20px;
+
+    border-radius: 14px;
+  }
+
+  .signin-card h2 {
+    font-size: 1.15rem;
+  }
+
+  .signin-text {
+    font-size: 0.9rem;
+  }
+
+  .signin-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .signin-secondary,
+  .signin-primary {
+    width: 100%;
+    text-align: center;
+  }
 }
