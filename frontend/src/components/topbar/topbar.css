@@ -349,16 +349,12 @@
   }
 
   /*
-    Keep only the icon/text that fits naturally.
-    The error banner should not force the header
-    onto a second row.
+    Keep the mobile header compact and readable.
+    Informational wallet notices are omitted on very small screens,
+    while wallet actions remain available and unclipped.
   */
   .wallet-error-banner {
-    max-width: 120px;
-
-    padding: 5px 8px;
-
-    font-size: 0.68rem;
+    display: none;
   }
 }
 
@@ -377,7 +373,7 @@
   }
 
   .wallet-error-banner {
-    max-width: 90px;
+    display: none;
   }
 
   .wallet-button {
