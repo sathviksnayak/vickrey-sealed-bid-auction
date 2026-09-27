@@ -7,12 +7,17 @@ export async function getNonce(req, res, next) {
   try {
     const { wallet } = req.body;
 
-    const nonce = crypto.randomBytes(32).toString("hex");
+    if (!wallet) {
+      return res.status(400).json({ message: "Wallet is required" });
+    }
 
-    const user = await User.findOneAndUpdate(
+    const nonce = crypto.randomBytes(32).toString("hex");
+    const nonceExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    await User.findOneAndUpdate(
       { walletAddress: wallet },
-      { nonce },
-      { new: true }
+      { nonce, nonceExpiresAt },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     res.status(200).json({ nonce });
@@ -25,15 +30,33 @@ export async function login(req, res, next) {
   try {
     const { wallet, signature } = req.body;
 
-    const user = await User.findOne({
+    if (!wallet || !signature) {
+      return res.status(400).json({ message: "Wallet and signature are required" });
+    }
+
+    let user = await User.findOne({
       walletAddress: wallet,
     });
+
     if (!user) {
-      return res.status(404).json({
-        message: "User not found",
-      });
+      user = await User.create({ walletAddress: wallet });
     }
+
     const nonce = user.nonce;
+
+    if (!nonce) {
+      return res.status(401).json({ message: "Missing nonce" });
+    }
+
+    const nonceExpiresAt = user.nonceExpiresAt ? new Date(user.nonceExpiresAt) : null;
+
+    if (!nonceExpiresAt || nonceExpiresAt.getTime() <= Date.now()) {
+      user.nonce = null;
+      user.nonceExpiresAt = null;
+      await user.save();
+
+      return res.status(401).json({ message: "Nonce expired" });
+    }
 
     const message = `Welcome to Vickrey Auction Nonce: ${nonce}`;
 
@@ -43,7 +66,8 @@ export async function login(req, res, next) {
         expiresIn: "24h",
       });
 
-      user.nonce = crypto.randomBytes(32).toString("hex");
+      user.nonce = null;
+      user.nonceExpiresAt = null;
       await user.save();
 
       res.status(200).json({ token });

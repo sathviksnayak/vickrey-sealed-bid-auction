@@ -3,8 +3,19 @@
 import { ethers } from "ethers";
 import AuctionABI from "../abi/VickreyAuction.json";
 
-export async function getAuctionChainData(address, signer) {
-  const contract = new ethers.Contract(address, AuctionABI, signer);
+const PUBLIC_SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
+
+export function getPublicProvider() {
+  const rpcUrl = import.meta.env.VITE_RPC_URL || PUBLIC_SEPOLIA_RPC;
+  return new ethers.JsonRpcProvider(rpcUrl);
+}
+
+export function getPublicAuctionContract(address, provider = getPublicProvider()) {
+  return new ethers.Contract(address, AuctionABI, provider);
+}
+
+export async function getAuctionChainData(address, signerOrProvider) {
+  const contract = new ethers.Contract(address, AuctionABI, signerOrProvider);
 
   const [
     seller,

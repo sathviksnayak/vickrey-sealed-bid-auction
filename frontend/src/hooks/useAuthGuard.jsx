@@ -6,32 +6,66 @@ import { useState, useRef } from "react";
 
 export function useAuthGuard() {
   const [show, setShow] = useState(false);
-  const { connectWallet, authenticated } = useWallet();
+  const { connectWallet } = useWallet();
 
   const resolver = useRef(null);
+  const pendingRequest = useRef(null);
+
+  function resolvePendingAuth(result) {
+    if (resolver.current) {
+      resolver.current(result);
+      resolver.current = null;
+    }
+
+    pendingRequest.current = null;
+    setShow(false);
+  }
+
   async function ensureAuthenticated() {
     const verified = await checkAuthenticated();
 
     if (verified) {
       return true;
     }
+
+    if (pendingRequest.current) {
+      return pendingRequest.current;
+    }
+
+    console.log("[AUTH] modal opened");
     setShow(true);
-    return new Promise((resolve) => {
+
+    pendingRequest.current = new Promise((resolve) => {
       resolver.current = resolve;
     });
+
+    return pendingRequest.current;
   }
+
   async function authenticate() {
+    if (pendingRequest.current && resolver.current) {
+      const ok = await connectWallet();
+      resolvePendingAuth(ok);
+      return ok;
+    }
+
     const ok = await connectWallet();
+    if (resolver.current) {
+      resolvePendingAuth(ok);
+    } else {
+      setShow(false);
+    }
 
-    setShow(false);
-
-    resolver.current?.(ok);
-    resolver.current = null;
+    return ok;
   }
 
   function close() {
+    if (pendingRequest.current || resolver.current) {
+      resolvePendingAuth(false);
+      return;
+    }
+
     setShow(false);
-    resolver.current?.(false);
   }
 
   const modal = (

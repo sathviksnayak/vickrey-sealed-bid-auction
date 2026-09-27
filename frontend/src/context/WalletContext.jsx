@@ -8,7 +8,6 @@ import {
 import { ethers } from "ethers";
 import { jwtDecode } from "jwt-decode";
 
-import { createUser, getUser } from "../services/userService";
 import { createNonce, Login } from "../services/authservice";
 
 const WalletContext = createContext();
@@ -24,6 +23,8 @@ export function WalletProvider({ children }) {
 
   const [signer, setSigner] = useState(null);
   const [walletError, setWalletError] = useState(null);
+
+  const connectWalletInFlight = useRef(null);
 
   // Tracks whether the next accountsChanged event should be ignored,
   // because we triggered the account change ourselves via switchAccount().
@@ -49,6 +50,42 @@ export function WalletProvider({ children }) {
     }
   }
 
+  async function syncWalletStateFromAccounts(accounts) {
+    const previousAccount = account;
+    const previousSigner = signer;
+
+    console.log("[WALLET] account before event ->", previousAccount);
+    console.log("[WALLET] signer before event ->", previousSigner);
+    console.log("[METAMASK] accountsChanged ->", accounts);
+
+    if (!accounts || accounts.length === 0) {
+      console.log("[METAMASK] eth_accounts -> []");
+      localStorage.removeItem("token");
+      setSigner(null);
+      setAccount("");
+      setAuthenticated(false);
+      console.log("[AUTH] authenticated after reset -> false");
+      return;
+    }
+
+    const nextAccount = accounts[0];
+    console.log("[WALLET] account after event ->", nextAccount);
+
+    const nextSigner = await provider.getSigner();
+    console.log("[WALLET] signer after event ->", nextSigner);
+
+    setSigner(nextSigner);
+    setAccount(nextAccount);
+
+    const nextAuthenticated = hasValidTokenFor(nextAccount);
+    setAuthenticated(nextAuthenticated);
+    console.log("[AUTH] authenticated after reset ->", nextAuthenticated);
+
+    if (!nextAuthenticated) {
+      localStorage.removeItem("token");
+    }
+  }
+
   async function initializeUser(walletSigner) {
     try {
       const addr = await walletSigner.getAddress();
@@ -59,12 +96,6 @@ export function WalletProvider({ children }) {
       // Clear any stale wallet connection error once
       // the wallet has been successfully initialized.
       setWalletError(null);
-
-      const user = await getUser(addr);
-
-      if (!user) {
-        await createUser(addr);
-      }
 
       return addr;
     } catch (err) {
@@ -80,6 +111,10 @@ export function WalletProvider({ children }) {
   // request accounts → initialize user → check JWT →
   // sign nonce if necessary → receive JWT.
   async function connectWallet() {
+    if (connectWalletInFlight.current) {
+      return connectWalletInFlight.current;
+    }
+
     if (!provider) {
       setWalletError(
         "MetaMask not detected. Please install it to continue."
@@ -87,43 +122,52 @@ export function WalletProvider({ children }) {
       return false;
     }
 
-    try {
-      setWalletError(null);
+    connectWalletInFlight.current = (async () => {
+      try {
+        setWalletError(null);
 
-      await provider.send("eth_requestAccounts", []);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        console.log("[METAMASK] eth_requestAccounts ->", accounts);
 
-      const walletSigner = await provider.getSigner();
-      const addr = await initializeUser(walletSigner);
+        const walletSigner = await provider.getSigner();
+        const addr = await initializeUser(walletSigner);
 
-      if (hasValidTokenFor(addr)) {
+        if (hasValidTokenFor(addr)) {
+          setAuthenticated(true);
+          setWalletError(null);
+          return true;
+        }
+
+        const { nonce } = await createNonce(addr);
+
+        const message = `Welcome to Vickrey Auction Nonce: ${nonce}`;
+
+        const signature = await walletSigner.signMessage(message);
+
+        const { token } = await Login({
+          wallet: addr,
+          signature,
+        });
+
+        localStorage.setItem("token", token);
+
         setAuthenticated(true);
         setWalletError(null);
+
         return true;
+      } catch (err) {
+        console.error("Failed to connect wallet:", err);
+
+        setWalletError("Failed to connect wallet. Please try again.");
+
+        return false;
       }
+    })();
 
-      const { nonce } = await createNonce(addr);
-
-      const message = `Welcome to Vickrey Auction Nonce: ${nonce}`;
-
-      const signature = await walletSigner.signMessage(message);
-
-      const { token } = await Login({
-        wallet: addr,
-        signature,
-      });
-
-      localStorage.setItem("token", token);
-
-      setAuthenticated(true);
-      setWalletError(null);
-
-      return true;
-    } catch (err) {
-      console.error("Failed to connect wallet:", err);
-
-      setWalletError("Failed to connect wallet. Please try again.");
-
-      return false;
+    try {
+      return await connectWalletInFlight.current;
+    } finally {
+      connectWalletInFlight.current = null;
     }
   }
 
@@ -138,40 +182,39 @@ export function WalletProvider({ children }) {
     try {
       setWalletError(null);
 
-      // We're intentionally changing accounts.
-      // Don't let accountsChanged listener react separately.
-      suppressNextAccountsChanged.current = true;
-
-      localStorage.removeItem("token");
-
-      setSigner(null);
-      setAccount("");
-      setAuthenticated(false);
-
-      await window.ethereum.request({
+      console.log("[METAMASK] wallet_requestPermissions -> start");
+      const permissions = await window.ethereum.request({
         method: "wallet_requestPermissions",
         params: [{ eth_accounts: {} }],
       });
+      console.log("[METAMASK] wallet_requestPermissions ->", permissions);
 
-      // connectWallet() will prompt for a fresh signature
-      // because the previous token was removed.
-      await connectWallet();
+      const accounts = await provider.send("eth_accounts", []);
+      console.log("[METAMASK] eth_accounts ->", accounts);
+
+      if (!accounts || accounts.length === 0) {
+        setWalletError("Account switch was cancelled.");
+        return false;
+      }
+
+      return true;
     } catch (err) {
       console.error("Failed to switch account:", err);
 
       setWalletError("Failed to switch account. Please try again.");
-    } finally {
-      suppressNextAccountsChanged.current = false;
+      return false;
     }
   }
 
   function disconnectWallet() {
+    console.log("[AUTH] authenticated before reset ->", authenticated);
     localStorage.removeItem("token");
 
     setAccount("");
     setSigner(null);
     setAuthenticated(false);
     setWalletError(null);
+    console.log("[AUTH] authenticated after reset -> false");
   }
 
   // Restore MetaMask's currently connected account on mount.
@@ -184,6 +227,7 @@ export function WalletProvider({ children }) {
 
       try {
         const accounts = await provider.send("eth_accounts", []);
+        console.log("[METAMASK] eth_accounts ->", accounts);
 
         if (accounts.length === 0) return;
 
@@ -209,26 +253,31 @@ export function WalletProvider({ children }) {
   useEffect(() => {
     if (!window.ethereum) return;
 
-    function handleAccountsChanged() {
+    async function handleAccountsChanged(accounts) {
       if (suppressNextAccountsChanged.current) {
-        // We caused this change ourselves through switchAccount().
+        console.log("[METAMASK] accountsChanged ignored due to switch suppression");
         return;
       }
 
-      disconnectWallet();
+      await syncWalletStateFromAccounts(accounts);
+    }
 
-      window.location.reload();
+    function handleChainChanged() {
+      console.log("[METAMASK] chainChanged ->", "network changed");
+      disconnectWallet();
     }
 
     window.ethereum.on("accountsChanged", handleAccountsChanged);
+    window.ethereum.on("chainChanged", handleChainChanged);
 
     return () => {
       window.ethereum.removeListener(
         "accountsChanged",
         handleAccountsChanged
       );
+      window.ethereum.removeListener("chainChanged", handleChainChanged);
     };
-  }, []);
+  }, [account, authenticated, provider, signer]);
 
   // Automatically clear temporary wallet errors after 5 seconds.
   useEffect(() => {

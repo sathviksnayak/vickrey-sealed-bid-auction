@@ -145,16 +145,9 @@ export default function Browse() {
       {!hasMetaMask && (
         <div className="metamask-banner">
           <span>
-MetaMask not detected. You’ll need it to access the auction platform.
+            Browse mode works without a wallet. Connect MetaMask when you want to
+            create an auction or place bids.
           </span>
-
-          <a
-            href="https://metamask.io/download"
-            target="_blank"
-            rel="noreferrer"
-          >
-            Install MetaMask →
-          </a>
         </div>
       )}
 

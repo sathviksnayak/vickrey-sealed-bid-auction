@@ -9,7 +9,10 @@ import { hashBid } from "../../utils/hashBid";
 import { getAuction } from "../../services/auctionService";
 import { createBid, updateBid } from "../../services/bidService";
 import { useWallet } from "../../context/WalletContext";
-import { getAuctionChainData } from "../../services/blockchainService";
+import {
+  getAuctionChainData,
+  getPublicProvider,
+} from "../../services/blockchainService";
 
 import { useTransactionModal } from "../../hooks/useTransactionModal";
 import TransactionModal from "../../components/transactionmodal/TransactionModal";
@@ -65,14 +68,12 @@ export default function Auction() {
   // ---------- Load Auction ----------
 
   async function loadAuction() {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    const signer = await provider.getSigner();
-
-    const contract = new ethers.Contract(address, ABI, signer);
+    const provider = getPublicProvider();
+    const contract = new ethers.Contract(address, ABI, provider);
 
     const [metadata, chainData] = await Promise.all([
       getAuction(address),
-      getAuctionChainData(address, contract.runner),
+      getAuctionChainData(address, contract.runner || provider),
     ]);
 
     setAuction({
