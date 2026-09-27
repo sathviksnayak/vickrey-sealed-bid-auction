@@ -67,11 +67,7 @@ export default function Topbar({ sidebarOpen, setSidebarOpen }) {
           <div className="wallet-error-banner">
             {walletError}
             {!window.ethereum && (
-              
-               < a href="https://metamask.io/download"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <a href="https://metamask.io/download" target="_blank" rel="noreferrer">
                 Install MetaMask →
               </a>
             )}
