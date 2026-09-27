@@ -1,7 +1,7 @@
 import { Document } from "mongoose";
 import Auction from "../models/auction.js";
 import { uploadImage, uploadDocument } from "../services/uploadService.js";
-export async function createAuction(req, res) {
+export async function createAuction(req, res, next) {
   try {
     const images = req.files?.images || [];
     const documents = req.files?.documents || [];
@@ -19,25 +19,21 @@ export async function createAuction(req, res) {
 
     res.status(201).json(auction);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function getAuctions(req, res) {
+export async function getAuctions(req, res, next) {
   try {
     const auctions = await Auction.find();
 
     res.status(200).json(auctions);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function getAuction(req, res) {
+export async function getAuction(req, res, next) {
   try {
     const auction = await Auction.findOne({
       auctionAddress: req.params.address,
@@ -51,13 +47,11 @@ export async function getAuction(req, res) {
 
     res.status(200).json(auction);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function getMyAuctions(req, res) {
+export async function getMyAuctions(req, res, next) {
   try {
     const auctions = await Auction.find({
       sellerWallet: req.user.wallet,
@@ -65,8 +59,6 @@ export async function getMyAuctions(req, res) {
 
     res.status(200).json(auctions);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }

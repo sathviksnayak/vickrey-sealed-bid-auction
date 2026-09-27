@@ -1,6 +1,6 @@
 import Bid from "../models/bid.js";
 
-export async function createBid(req, res) {
+export async function createBid(req, res, next) {
   try {
     const bid = await Bid.create({
       ...req.body,
@@ -9,13 +9,11 @@ export async function createBid(req, res) {
 
     res.status(201).json(bid);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function getMyBids(req, res) {
+export async function getMyBids(req, res, next) {
   try {
     const bids = await Bid.find({
       bidderWallet: req.user.wallet,
@@ -23,13 +21,11 @@ export async function getMyBids(req, res) {
 
     res.status(200).json(bids);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function updateBid(req, res) {
+export async function updateBid(req, res, next) {
   try {
     const bid = await Bid.findOneAndUpdate(
       {
@@ -51,8 +47,6 @@ export async function updateBid(req, res) {
 
     res.status(200).json(bid);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }

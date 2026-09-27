@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import morgan from "morgan";
 
 import { connectDB } from "./config/db.js";
 import auctionRoutes from "./routes/auctionRoutes.js";
@@ -8,7 +9,12 @@ import bidRoutes from "./routes/bidRoutes.js";
 
 import authRoutes from "./routes/authRoutes.js";
 
+import errorHandler from "./middleware/errorhandler.js";
+
 const app = express();
+
+app.use(morgan("dev"));
+
 connectDB();
 
 app.use(cors());
@@ -18,6 +24,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/auctions", auctionRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/bids", bidRoutes);
+
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 

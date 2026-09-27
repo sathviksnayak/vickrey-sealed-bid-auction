@@ -3,7 +3,7 @@ import User from "../models/user.js";
 import jwt from "jsonwebtoken";
 import { ethers } from "ethers";
 
-export async function getNonce(req, res) {
+export async function getNonce(req, res, next) {
   try {
     const { wallet } = req.body;
 
@@ -17,13 +17,11 @@ export async function getNonce(req, res) {
 
     res.status(200).json({ nonce });
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function login(req, res) {
+export async function login(req, res, next) {
   try {
     const { wallet, signature } = req.body;
 
@@ -53,9 +51,7 @@ export async function login(req, res) {
       return res.status(401).json({ message: "Invalid signature" });
     }
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 

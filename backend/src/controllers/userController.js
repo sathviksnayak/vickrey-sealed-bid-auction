@@ -1,6 +1,6 @@
 import User from "../models/user.js";
 
-export async function createUser(req, res) {
+export async function createUser(req, res, next) {
   try {
     const { wallet } = req.body;
 
@@ -18,13 +18,11 @@ export async function createUser(req, res) {
 
     res.status(201).json(user);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function getUser(req, res) {
+export async function getUser(req, res, next) {
   try {
     const user = await User.findOne({
       walletAddress: req.params.wallet,
@@ -36,13 +34,11 @@ export async function getUser(req, res) {
 
     res.status(200).json(user);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
 
-export async function updateUser(req, res) {
+export async function updateUser(req, res, next) {
   try {
     const user = await User.findOneAndUpdate(
       {
@@ -63,8 +59,6 @@ export async function updateUser(req, res) {
 
     res.status(200).json(user);
   } catch (err) {
-    res.status(500).json({
-      message: err.message,
-    });
+    next(err);
   }
 }
